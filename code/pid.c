@@ -21,6 +21,8 @@ float servo_kd=0;
 float servo_kp1;
 
 int a;
+int n;
+float nn;
 int pid_servo(float Err)
 {
     int duty;
