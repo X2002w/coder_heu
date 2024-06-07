@@ -15,16 +15,22 @@ float r_motor_ki=1.3;
 float r_motor_kd=0;
 
 //舵机pid参数
-float servo_kp=9.5;
+float servo_kp=6.5;
 float servo_ki=0;
 float servo_kd=0;
+float servo_kp1;
 
-
+int a;
 int pid_servo(float Err)
 {
     int duty;
     float err,l_err;
     err=Err;
+
+    //二次项动态kp
+    servo_kp1=err*err/740+servo_kp;
+    //指数动态kp
+    servo_kp1=(double)(abs((exp(-abs(err))-1)/(exp(-abs(err))+1))/2+servo_kp)*2;
 
     duty=servo_kp*err+servo_kd*(err-l_err);
     l_err=err;
