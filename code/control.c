@@ -16,9 +16,16 @@ int center_speed;//小车车身左右编码加权实际速度
 int left_encoder,right_encoder;//左右编码器读数
 int left_speed,right_speed;//左右轮差速目标速度
 int Target_Speed_l,Target_Speed_r;//左右轮实际速度
+int speed_ratio=430;//差速系数
+float duty_ratio=0.3;//电机增量误差系数
+int duty;//电机差速增量
 
 
 
+int left_white_num=0;
+int right_white_num=0;
+int speed_map;//最终用于映射的白点
+float straight_dis;//现实实际距离映射
 /*-------------------------------------------------------------------------------------------------------------------
   @brief     利用Vofa发数据
   @param     data1，data2，data3，data4，data5，data6，要发的数据放进入参即可
@@ -71,17 +78,119 @@ void encoder_get(void){
 //速度决策
 void set_speed(void)
 {
-    target_speed=340;
-    if(chujie_flag)
+    int y, x;
+    target_speed=360;
+    //直道:560;
+
+    for (y= MT9V03X_H-1;y>=0;y--)
+    {
+        if (bin_image[y][left_map[y]]==0)
+        {
+            break;
+        }
+        else 
+        {
+            left_white_num++;
+            //printf("%d\n",left_white_num);
+        }
+        //printf("%d    %d\n",y,left_white_num);
+    }
+
+    for (y= MT9V03X_H-1;y>=0;y--)
+    {
+        if (bin_image[y][right_map[y]] == 0)
+        {
+            break;
+        }
+        else
+        {
+            right_white_num++;
+        }
+    }
+    if (left_white_num < right_white_num)
+        speed_map = left_white_num;
+    else 
+        speed_map = right_white_num;
+
+    left_white_num=0;
+    right_white_num=0;
+
+
+
+    straight_dis = -0.002036*(MT9V03X_H- speed_map)*(MT9V03X_H- speed_map)*(MT9V03X_H- speed_map)+0.2785*(MT9V03X_H- speed_map)*(MT9V03X_H- speed_map)+-12.74*(MT9V03X_H- speed_map)+232.2;
+          /*  Linear model Poly3:
+     f(x) = p1*x^3 + p2*x^2 + p3*x + p4
+Coefficients (with 95% confidence bounds):
+       p1 =   -0.002036  (-0.002525, -0.001547)
+       p2 =      0.2785  (0.2291, 0.3279)
+       p3 =      -12.74  (-14.09, -11.4)
+       p4 =       232.2  (222.5, 241.8)
+
+        */
+        if(straight_dis>250)straight_dis=250;
+        else if(straight_dis<1)straight_dis=1;
+
+        /*     f(x) = p1*x^2 + p2*x + p3
+Coefficients (with 95% confidence bounds):
+       p1 =    0.003075  (-0.005807, 0.01196)
+       p2 =      0.7278  (-0.8917, 2.347)
+       p3 =       313.6  (253.6, 373.5)
+         * */
+        //target_speed=0.003075*straight_dis*straight_dis+0.7278*straight_dis+313.6;
+
+    if(chujie_flag==1||zebra_line_flag>=2)
         target_speed=0;
 }
 //差速
 void speed_contral(void)
 {
-    left_speed=target_speed;
-    right_speed=target_speed;
 
-printf("%d,%d,%d,%d,%d,%d\n",left_encoder,left_speed,Target_Speed_l,right_encoder,right_speed,Target_Speed_r);
+
+
+    if (MT9V03X_H-hightest > 20)
+        duty = (angle - servos_center) * speed_ratio / 100;
+    else
+        duty = (angle - servos_center) * (speed_ratio - 390) / 100;
+
+    //SU400——duty分两种情况，即两种左转右转
+    //计算车身实际速度
+    center_speed = (left_encoder + right_encoder) / 2;
+    if (duty > 110)
+        duty = 110;
+    else if (duty <= -110)
+        duty = -110;
+
+
+
+
+    if (duty > 0) {
+        //左转
+        if (abs(duty_ratio * duty) < 35)
+            right_speed = target_speed + duty_ratio * duty;
+        else
+            right_speed = target_speed + 35;
+        left_speed = target_speed - duty;
+    }
+    else {
+        //右转
+        if (abs(duty_ratio * duty) < 35)
+            left_speed = target_speed - duty_ratio * duty;//左加速
+        else
+            left_speed = target_speed + 35;//左加速
+        right_speed = target_speed + duty;//右减速
+    }
+
+
+
+
+
+
+
+
+   // left_speed=target_speed;
+   // right_speed=target_speed;
+
+//printf("%d,%d,%d,%d,%d,%d\n",left_encoder,left_speed,Target_Speed_l,right_encoder,right_speed,Target_Speed_r);
 //printf("%d,%d,%d\n\r",right_encoder,right_speed,Target_Speed_r);
     Target_Speed_l=pid_l_motor(left_encoder,left_speed);
     Target_Speed_r= pid_r_motor(right_encoder,right_speed);

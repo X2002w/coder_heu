@@ -118,6 +118,8 @@
 #include "keyboard.h"
 #include "control.h"
 #include "pid.h"
+#include "island.h"
+#include "Gyroscope.h"
 //=====================================================”√ªß≤„======================================================
 
 #endif

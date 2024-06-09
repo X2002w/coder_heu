@@ -243,29 +243,30 @@ void interface_display(void)
        {
           ips200_show_gray_image(0,0,bin_image[0], MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H,0);
 
-          ips200_show_string(1,130, "string:");  //设置速度档
-          ips200_show_float(160, 130, 0, 3, 2);
+          ips200_show_string(1,130, "Island:");  //设置速度档
+          ips200_show_float(160, 130, Island_State, 3, 2);
 
-          ips200_show_string(1,150, "string:");
-          ips200_show_float(160, 150, 0, 3, 2);
+          ips200_show_string(1,150, "l_huan:");
+          ips200_show_float(160, 150, Left_Island_Flag, 3, 2);
 
-          ips200_show_string(1,170, "string:");
-          ips200_show_float(160, 170, 0, 5, 1);
+          ips200_show_string(1,170, "r_huan:");
+          ips200_show_float(160, 170, Right_Island_Flag, 5, 1);
 
-          ips200_show_string(1,190, "string:");
-          ips200_show_float(160, 190, 0, 3, 3);
+          ips200_show_string(1,190, "FJ_Angle:");
+          ips200_show_float(160, 190, FJ_Angle, 3, 3);
 
-          ips200_show_string(1,210, "string:");
-          ips200_show_float(160, 210, 0, 4, 2);
+          ips200_show_string(1,210, "straight_dis:");
+          ips200_show_float(160, 210, straight_dis, 4, 2);
 
-          ips200_show_string(1,230, "string:");
-          ips200_show_float(160, 230, 0, 3, 1);
+          ips200_show_string(1,230, "zebra_line_flag:");
+          ips200_show_float(160, 230, zebra_line_flag, 3, 1);
 
-          ips200_show_string(1,250, "string:");
-          ips200_show_float(160, 250, 0, 5, 3);
+          ips200_show_string(1,250, "target_speed:");
+          ips200_show_float(160, 250, target_speed, 3, 1);
 
-          ips200_show_string(1,270, "string:");
-          ips200_show_float(160, 270, 0, 5, 3);
+
+          ips200_show_string(1,270, "chujie_flag:");
+          ips200_show_float(160, 270, chujie_flag, 3, 1);
 
         }
           else if(dispagenum==1) //显示小车控制参数及调节
@@ -618,10 +619,10 @@ void fengmingqi(void){
 }
 void fenglingqi_use(void)
 {
-   /* if(cross_flag){
+    if(Left_Island_Flag||Right_Island_Flag){
         fengmingqi();
-        cross_flag=0;
-    }*/
+      //  Island_State=0;
+    }
 }
 void wifi_spi(void){
 

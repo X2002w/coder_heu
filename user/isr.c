@@ -55,8 +55,22 @@ IFX_INTERRUPT(cc60_pit_ch1_isr, 0, CCU6_0_CH1_ISR_PRIORITY)
 {
     interrupt_global_enable(0);                     // 开启中断嵌套
     pit_clear_flag(CCU60_CH1);
-
-
+    imu660ra_get_acc();
+    Gyroscope_GetData();
+    Get_Gyroscope_Pitch(); //俯仰角实时判断
+  //  printf("%f\n\r",FJ_Pitch);
+    if (Island_State != 0)//进环岛就积分
+    {
+        Get_Gyroscope_Angle();
+        if (Island_State == 9)//进9状态必须清除积分
+        {
+            Clear_Gyroscope_Angle();
+        }
+    }
+    else//其他情况不积分
+    {
+        Clear_Gyroscope_Angle();
+    }
 
 
 }
@@ -112,7 +126,6 @@ IFX_INTERRUPT(exti_ch1_ch5_isr, 0, EXTI_CH1_CH5_INT_PRIO)
         exti_flag_clear(ERU_CH1_REQ10_P14_3);
 
         tof_module_exti_handler();                  // ToF 模块 INT 更新中断
-
     }
 
     if(exti_flag_get(ERU_CH5_REQ1_P15_8))           // 通道5中断
