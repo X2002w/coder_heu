@@ -145,7 +145,6 @@ Coefficients (with 95% confidence bounds):
 void speed_contral(void)
 {
 
-    float a;
 
     if (MT9V03X_H-hightest > 20)
         duty = (angle - servos_center) * speed_ratio / 100;
@@ -154,7 +153,7 @@ void speed_contral(void)
 
     //SU400——duty分两种情况，即两种左转右转
     //计算车身实际速度
-    center_speed = (left_encoder + right_encoder) / 2;
+   // center_speed = (left_encoder + right_encoder) / 2;
     if (duty > 110)
         duty = 110;
     else if (duty <= -110)
