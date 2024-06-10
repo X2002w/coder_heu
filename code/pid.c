@@ -27,6 +27,7 @@ int pid_servo(float Err)
     float err,l_err;
     err=Err;
 
+
     //二次项动态kp
    // servo_kp1=err*err/740+servo_kp;
     //指数动态kp

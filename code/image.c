@@ -104,18 +104,26 @@ int chujie_flag=0;
 float err;//摄像头误差
 int angle=0;
 
-const uint8 Weight[MT9V03X_H]=//误差加权控制
+ uint8 Weight[MT9V03X_H]=//误差加权控制
 {
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端00 ——09 行权重
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端10 ——19 行权重
-        1, 1, 1, 1, 1, 1, 1, 3, 4, 5,              //图像最远端20 ——29 行权重
-        6, 7, 9,11,13,15,17,19,20,20,              //图像最远端30 ——39 行权重
-       19,17,15,13,11, 9, 7, 5, 3, 1,              //图像最远端40 ——49 行权重
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端20 ——29 行权重
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端30 ——39 行权重
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端40 ——49 行权重
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端50 ——59 行权重
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端60 ——69 行权重
 
 };
+const uint8 weight_part[24]= //动态误差权重
+{
 
+    1,3,
+    4,5,6,8,9,12,15,17,19,22,
+    23,20,18,17,15,13,11,9,6,4,
+    2,1,
+
+};
 
 
 
@@ -374,13 +382,79 @@ float Err_Sum(void)
     int i;
     float err=0;
     float weight_count=0;
-    //常规误差
-    for(i=MT9V03X_H-1;i>=MT9V03X_H-hightest-1;i--)//常规误差计算
+    int weight_num;//动态权重24行,主行加10
+    //根据速度给予误差行，使用13行（17——100cm）以下控制
+    //weight_num给予13-27
+    center_speed = (left_encoder + right_encoder) / 2;
+    if (center_speed >= 460)
+        weight_num = 13;
+    else if (center_speed < 460 && center_speed >= 430)
+        weight_num = 15;
+    else if (center_speed < 430 && center_speed >= 410)
+        weight_num = 17;
+    else if (center_speed < 410 && center_speed >= 380)
+        weight_num = 20;
+    else if (center_speed < 380 && center_speed >= 360)
+        weight_num = 22;
+    else if (center_speed < 360 && center_speed >= 340)
+        weight_num = 25;
+    else
+        weight_num = 27;
+
+
+    for (i = weight_num; i > weight_num + 24; i++) 
     {
-        err+=(MT9V03X_W/2-((l_border_fill[i]+r_border_fill[i])>>1))*Weight[i];//右移1位，等效除2
-        weight_count+=Weight[i];
+        Weight[i] = weight_part[i-weight_num];
     }
-    err=err/weight_count;
+
+    //使用13行（17——100cm）以下控制
+    if (MT9V03X_H - hightest <=13) 
+    {
+        for (i = MT9V03X_H - 1; i >=13; i--)//常规误差计算
+        {
+            err += (MT9V03X_W / 2 - ((l_border_fill[i] + r_border_fill[i]) >> 1)) * Weight[i];//右移1位，等效除2
+            weight_count += Weight[i];
+        }
+        err = err / weight_count;
+    }
+
+
+
+    else 
+    {
+        //搜索截至行超过最大主行，从搜索截至行处重新给予权重(主行之后)
+        if ((MT9V03X_H - hightest) >= 37 && (MT9V03X_H - hightest) <= 54)
+        {
+            for (i = (MT9V03X_H - hightest); i > (MT9V03X_H - hightest) + 12; i++)
+            {
+                Weight[i] = weight_part[i - (MT9V03X_H - hightest)+11];
+            }
+
+            for (i = MT9V03X_H - 1; i >= MT9V03X_H - hightest - 1; i--)//常规误差计算
+            {
+                err += (MT9V03X_W / 2 - ((l_border_fill[i] + r_border_fill[i]) >> 1)) * Weight[i];//右移1位，等效除2
+                weight_count += Weight[i];
+            }
+            err = err / weight_count;
+        }
+
+        else if ((MT9V03X_H - hightest) > 54) //舍弃权重，使用搜索截至行
+        {
+            err = MT9V03X_W / 2 - ((l_border_fill[MT9V03X_H - hightest] + r_border_fill[MT9V03X_H - hightest]) >> 1);
+        }
+
+        else
+        {
+
+            for (i = MT9V03X_H - 1; i >= MT9V03X_H - hightest - 1; i--)//常规误差计算
+            {
+                err += (MT9V03X_W / 2 - ((l_border_fill[i] + r_border_fill[i]) >> 1)) * Weight[i];//右移1位，等效除2
+                weight_count += Weight[i];
+            }
+            err = err / weight_count;
+        }
+    }
+
 
     return err;
 }
