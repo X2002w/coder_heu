@@ -11,13 +11,13 @@
 
 //小车速度相关信息
 int set_mode=0; //小车模式设置，给予不同速度
-int target_speed=0;//小车车身目标速度
+int target_speed=370;//小车车身目标速度
 int center_speed;//小车车身左右编码加权实际速度
 int left_encoder,right_encoder;//左右编码器读数
 int left_speed,right_speed;//左右轮差速目标速度
 int Target_Speed_l,Target_Speed_r;//左右轮实际速度
-int speed_ratio=430;//差速系数
-float duty_ratio=0.3;//电机增量误差系数
+int speed_ratio=4.3;//差速系数
+float duty_ratio=0.12;//电机增量误差系数
 int duty;//电机差速增量
 
 
@@ -79,7 +79,27 @@ void encoder_get(void){
 void set_speed(void)
 {
     int y, x;
-    target_speed=360;
+  
+    if (set_mode == 0)
+        target_speed = 370;
+    else if (set_mode == 1)
+        target_speed = 390;
+    else if (set_mode == 2)
+        target_speed = 410;
+    else if (set_mode == 3)
+        target_speed = 430;
+    else if (set_mode == 4)
+        target_speed = 450;
+    else if (set_mode == 5)
+        target_speed = 470;
+    else if (set_mode == 6)
+        target_speed = 490;
+    else if (set_mode == 7)
+        target_speed = 510;
+    else if (set_mode == 8)
+        target_speed = 530;
+    else if (set_mode == 9)
+        target_speed = 560;
     //直道:560;
 
     for (y= MT9V03X_H-1;y>=0;y--)
@@ -146,25 +166,29 @@ void speed_contral(void)
 {
 
 
-    if (MT9V03X_H-hightest > 20)
-        duty = (angle - servos_center) * speed_ratio / 100;
-    else
-        duty = (angle - servos_center) * (speed_ratio - 390) / 100;
 
+  /*  //舵机误差范围，正负430
+    if (straight_dis < 140)//不是长直道
+        duty = (angle - servos_center) * speed_ratio ;
+    else
+        duty = (angle - servos_center) * (speed_ratio - 3.9);
+        */
     //SU400——duty分两种情况，即两种左转右转
     //计算车身实际速度
    // center_speed = (left_encoder + right_encoder) / 2;
-    if (duty > 110)
-        duty = 110;
-    else if (duty <= -110)
-        duty = -110;
+    duty = angle - servos_center;
+    if (duty > 430)
+        duty = 430;
+    else if (duty <= -430)
+        duty = -430;
 
 
 
 
+    //差速的各种方式，待更改
     if (duty > 0) {
         //左转
-        if (abs(duty_ratio * duty) < 35)
+        if (abs(duty_ratio * duty) < 35)//右加速限幅，防止侧翻
             right_speed = target_speed + duty_ratio * duty;
         else
             right_speed = target_speed + 35;
@@ -172,11 +196,76 @@ void speed_contral(void)
     }
     else {
         //右转
-        if (abs(duty_ratio * duty) < 35)
+        if (abs(duty_ratio * duty) < 35)//左加速限幅，防止侧翻
             left_speed = target_speed - duty_ratio * duty;//左加速
         else
             left_speed = target_speed + 35;//左加速
         right_speed = target_speed + duty;//右减速
+    }
+
+    if (Left_Island_Flag || Left_Island_Flag)
+    {
+        if (Island_State == 4) 
+        {
+            duty_ratio = 0.32;
+            if (duty > 0) {
+                //左转
+                if (abs(duty_ratio * duty) < 80)//右加速限幅，防止侧翻
+                    right_speed = target_speed + duty_ratio * duty;
+                else
+                    right_speed = target_speed + 80;
+                left_speed = target_speed - duty;
+            }
+            else {
+                //右转
+                if (abs(duty_ratio * duty) < 80)//左加速限幅，防止侧翻
+                    left_speed = target_speed - duty_ratio * duty;//左加速
+                else
+                    left_speed = target_speed + 80;//左加速
+                right_speed = target_speed +  duty;//右减速
+            }
+        }
+        else 
+        {//其他环岛状态，快速出入环
+            duty_ratio = 0;
+            if (duty > 0) {
+                //左转
+                if (abs(duty_ratio * duty) < 60)//右加速限幅，防止侧翻
+                    right_speed = target_speed + duty_ratio * duty;
+                else
+                    right_speed = target_speed + 60;
+                left_speed = target_speed -  duty;
+            }
+            else {
+                //右转
+                if (abs(duty_ratio * duty) < 60)//左加速限幅，防止侧翻
+                    left_speed = target_speed - duty_ratio * duty;//左加速
+                else
+                    left_speed = target_speed + 60;//左不变
+                right_speed = target_speed + duty;//右减速
+            }
+        }
+
+    }
+
+
+
+
+    if (duty > 0) {
+        //左转
+        if (abs(duty_ratio * duty) < 35)//右加速限幅，防止侧翻
+            right_speed = target_speed + duty_ratio * duty;
+        else
+            right_speed = target_speed + 35;
+        left_speed = target_speed - duty_ratio*duty;
+    }
+    else {
+        //右转
+        if (abs(duty_ratio * duty) < 35)//左加速限幅，防止侧翻
+            left_speed = target_speed - duty_ratio * duty;//左加速
+        else
+            left_speed = target_speed + 35;//左加速
+        right_speed = target_speed + duty_ratio * duty;//右减速
     }
 
 
