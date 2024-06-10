@@ -145,7 +145,7 @@ Coefficients (with 95% confidence bounds):
 void speed_contral(void)
 {
 
-
+    float a;
 
     if (MT9V03X_H-hightest > 20)
         duty = (angle - servos_center) * speed_ratio / 100;
