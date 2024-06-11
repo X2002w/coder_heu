@@ -167,12 +167,12 @@ void speed_contral(void)
 
 
 
-  /*  //舵机误差范围，正负430
+   //舵机误差范围，正负430
     if (straight_dis < 140)//不是长直道
         duty = (angle - servos_center) * speed_ratio ;
     else
         duty = (angle - servos_center) * (speed_ratio - 3.9);
-        */
+        
     //SU400——duty分两种情况，即两种左转右转
     //计算车身实际速度
    // center_speed = (left_encoder + right_encoder) / 2;
