@@ -813,6 +813,11 @@ void center_repair(void){
         }
     }
 
+    //对于丢线，查找未丢线边界的变化趋势，映射到丢线区域
+
+
+
+
     else if (straight_flag==0&& Island_State==0&&cross_flag==0 && ramp_flag==0)
     {
         //普通弯道
