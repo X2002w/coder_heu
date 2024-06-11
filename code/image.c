@@ -65,6 +65,8 @@ int hightest;//搜索截止行
 //定义赛道丢线信息
 int l_start;
 int r_start;
+int l_lost_start;//丢线开始的点
+int r_lost_start;
 int l_lost_num;
 int r_lost_num;
 int l_r_lostnum;
@@ -76,10 +78,10 @@ int r_lost_flag[MT9V03X_H]; //右丢线数组，丢线置1
 
 //十字
 int cross_flag=0;//十字标志位
-int left_up_flag;//左上拐点标志位
-int left_down_flag;//左下拐点标志位
-int right_down_flag;//
-int right_up_flag;
+volatile int Left_Down_Find = 0; //十字使用，找到被置行数，没找到就是0
+volatile int Left_Up_Find = 0;   //四个拐点标志
+volatile int Right_Down_Find = 0;
+volatile int Right_Up_Find = 0;
 
 //坡道
 int ramp_flag=0;//坡道标志位
@@ -102,6 +104,7 @@ int chujie_flag=0;
 //舵机信息
 
 float err;//摄像头误差
+float err_add;//摄像头误差补偿量
 int angle=0;
 
  uint8 Weight[MT9V03X_H]=//误差加权控制
@@ -236,6 +239,8 @@ void Longest_White_Column(void)//最长白列巡线
     l_lost_num  = 0;
     l_start = 0;//第一个非丢线点,常规边界起始点
     r_start = 0;
+    l_lost_start = 0；
+    r_lost_start = 0;
     l_r_lostnum = 0;//两边同时丢线数
 
     for (i = 0; i <=MT9V03X_H-1; i++)//数据清零
@@ -360,6 +365,10 @@ void Longest_White_Column(void)//最长白列巡线
             l_start = i;
         if (r_start == 0 && r_lost_flag[i] != 1)
             r_start = i;
+        if (l_lost_start == 0 && l_lost_flag[i] == 1 && l_lost_flag[i + 1] == 1 && l_lost_flag[i + 2] == 1)//记录第一个丢线点，
+            l_lost_start = i;
+        if (r_lost_start == 0 && r_lost_flag[i] == 1 && r_lost_flag[i + 1] == 1 && r_lost_flag[i + 2] == 1)
+            r_lost_start = i;
         road_wide[i]=r_border[i]-l_border[i];
     }
 
@@ -772,8 +781,240 @@ float process_curvity(uint8 x1, uint8 y1, uint8 x2, uint8 y2, uint8 x3, uint8 y3
     return K;
 }
 */
+
+
+
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     找下面的两个拐点，供十字使用
+  @param     搜索的范围起点，终点
+  @return    修改两个全局变量
+             Right_Down_Find=0;
+             Left_Down_Find=0;
+  Sample     Find_Down_Point(int start,int end)
+  @note      运行完之后查看对应的变量，注意，没找到时对应变量将是0
+-------------------------------------------------------------------------------------------------------------------*/
+void Find_Down_Point(int start, int end)
+{
+    int i, t;
+    Right_Down_Find = 0;
+    Left_Down_Find = 0;
+    if (start < end)
+    {
+        t = start;
+        start = end;
+        end = t;
+    }
+    if (start >= MT9V03X_H - 1 - 5)//下面5行数据不稳定，不能作为边界点来判断，舍弃
+        start = MT9V03X_H - 1 - 5;
+    if (end <= MT9V03X_H - hightest)
+        end = MT9V03X_H - hightest;
+    if (end <= 5)
+        end = 5;
+    for (i = start; i >= end; i--)
+    {
+        if (Left_Down_Find == 0 &&//只找第一个符合条件的点
+            abs(l_border[i] - l_border[i + 1]) <= 5 &&//角点的阈值可以更改
+            abs(l_border[i + 1] - l_border[i + 2]) <= 5 &&
+            abs(l_border[i + 2] - l_border[i + 3]) <= 5 &&
+            (l_border[i] - l_border[i - 2]) >= 8 &&
+            (l_border[i] - l_border[i - 3]) >= 15 &&
+            (l_border[i] - l_border[i - 4]) >= 15)
+        {
+            Left_Down_Find = i;//获取行数即可
+        }
+        if (Right_Down_Find == 0 &&//只找第一个符合条件的点
+            abs(r_border[i] - r_border[i + 1]) <= 5 &&//角点的阈值可以更改
+            abs(r_border[i + 1] - r_border[i + 2]) <= 5 &&
+            abs(r_border[i + 2] - r_border[i + 3]) <= 5 &&
+            (r_border[i] - r_border[i - 2]) <= -8 &&
+            (r_border[i] - r_border[i - 3]) <= -15 &&
+            (r_border[i] - r_border[i - 4]) <= -15)
+        {
+            Right_Down_Find = i;
+        }
+        if (Left_Down_Find != 0 && Right_Down_Find != 0)//两个找到就退出
+        {
+            break;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     找上面的两个拐点，供十字使用
+  @param     搜索的范围起点，终点
+  @return    修改两个全局变量
+             Left_Up_Find=0;
+             Right_Up_Find=0;
+  Sample     Find_Up_Point(int start,int end)
+  @note      运行完之后查看对应的变量，注意，没找到时对应变量将是0
+-------------------------------------------------------------------------------------------------------------------*/
+void Find_Up_Point(int start, int end)
+{
+    int i, t;
+    Left_Up_Find = 0;
+    Right_Up_Find = 0;
+    if (start < end)
+    {
+        t = start;
+        start = end;
+        end = t;
+    }
+    if (end <= MT9V03X_H - hightest)
+        end = MT9V03X_H - hightest;
+    if (end <= 5)//及时最长白列非常长，也要舍弃部分点，防止数组越界
+        end = 5;
+    if (start >= MT9V03X_H - 1 - 5)//下面5行数据不稳定，不能作为边界点来判断，舍弃
+        start = MT9V03X_H - 1 - 5;
+    for (i = start; i >= end; i--)
+    {
+        if (Left_Up_Find == 0 &&//只找第一个符合条件的点
+            abs(l_border[i] - l_border[i - 1]) <= 5 &&
+            abs(l_border[i - 1] - l_border[i - 2]) <= 5 &&
+            abs(l_border[i - 2] - l_border[i - 3]) <= 5 &&
+            (l_border[i] - l_border[i + 2]) >= 8 &&
+            (l_border[i] - l_border[i + 3]) >= 15 &&
+            (l_border[i] - l_border[i + 4]) >= 15)
+        {
+            Left_Up_Find = i;//获取行数即可
+        }
+        if (Right_Up_Find == 0 &&//只找第一个符合条件的点
+            abs(r_border[i] - r_border[i - 1]) <= 5 &&//下面两行位置差不多
+            abs(r_border[i - 1] - r_border[i - 2]) <= 5 &&
+            abs(r_border[i - 2] - r_border[i - 3]) <= 5 &&
+            (r_border[i] - r_border[i + 2]) <= -8 &&
+            (r_border[i] - r_border[i + 3]) <= -15 &&
+            (r_border[i] - r_border[i + 4]) <= -15)
+        {
+            Right_Up_Find = i;//获取行数即可
+        }
+        if (Left_Up_Find != 0 && Right_Up_Find != 0)//下面两个找到就出去
+        {
+            break;
+        }
+    }
+    if (abs(Right_Up_Find - Left_Up_Find) >= 30)//纵向撕裂过大，视为误判
+    {
+        Right_Up_Find = 0;
+        Left_Up_Find = 0;
+    }
+}
+
+
+
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     十字检测
+  @param     null
+  @return    null
+  Sample     Cross_Detect(void);
+  @note      利用四个拐点判别函数，查找四个角点，根据找到拐点的个数决定是否补线
+-------------------------------------------------------------------------------------------------------------------*/
+void Cross_Detect()
+{
+    int down_search_start = 0;//下点搜索开始行
+    cross_flag = 0;
+    if (Island_State == 0 && ramp_flag == 0)//与环岛互斥开
+    {
+        Left_Up_Find = 0;
+        Right_Up_Find = 0;
+        if (l_r_lostnum >= 10)//十字必定有双边丢线，在有双边丢线的情况下再开始找角点
+        {
+            Find_Up_Point(MT9V03X_H - 1, 0);
+            if (Left_Up_Find == 0 && Right_Up_Find == 0)//只要没有同时找到两个上点，直接结束
+            {
+                return;
+            }
+        }
+        if (Left_Up_Find != 0 && Right_Up_Find != 0)//找到两个上点，就找到十字了
+        {
+            cross_flag = 1;//对应标志位，便于各元素互斥掉
+            down_search_start = Left_Up_Find > Right_Up_Find ? Left_Up_Find : Right_Up_Find;//用两个上拐点坐标靠下者作为下点的搜索上限
+            Find_Down_Point(MT9V03X_H - 5, down_search_start + 2);//在上拐点下2行作为下点的截止行
+            if (Left_Down_Find <= Left_Up_Find)
+            {
+                Left_Down_Find = 0;//下点不可能比上点还靠上
+            }
+            if (Right_Down_Find <= Right_Up_Find)
+            {
+                Right_Down_Find = 0;//下点不可能比上点还靠上
+            }
+            if (Left_Down_Find != 0 && Right_Down_Find != 0)
+            {//四个点都在，无脑连线，这种情况显然很少
+                Left_Add_Line(l_border[Left_Up_Find], Left_Up_Find, l_border[Left_Down_Find], Left_Down_Find);
+                Right_Add_Line(r_border[Right_Up_Find], Right_Up_Find, r_border[Right_Down_Find], Right_Down_Find);
+            }
+            else if (Left_Down_Find == 0 && Right_Down_Find != 0)//11//这里使用的都是斜率补线
+            {//三个点                                     //01
+                Lengthen_Left_Boundry(Left_Up_Find - 1, MT9V03X_H - 1);
+                Right_Add_Line(r_border[Right_Up_Find], Right_Up_Find, r_border[Right_Down_Find], Right_Down_Find);
+            }
+            else if (Left_Down_Find != 0 && Right_Down_Find == 0)//11
+            {//三个点                                     //10
+                Left_Add_Line(l_border[Left_Up_Find], Left_Up_Find, l_border[Left_Down_Find], Left_Down_Find);
+                Lengthen_Right_Boundry(Right_Up_Find - 1, MT9V03X_H - 1);
+            }
+            else if (Left_Down_Find == 0 && Right_Down_Find == 0)//11
+            {//就俩上点                                   //00
+                Lengthen_Left_Boundry(Left_Up_Find - 1, MT9V03X_H - 1);
+                Lengthen_Right_Boundry(Right_Up_Find - 1, MT9V03X_H - 1);
+            }
+        }
+        else
+        {
+            cross_flag = 0;
+        }
+    }
+    //角点相关变量，debug使用
+    //ips200_showuint8(0,12,Cross_Flag);
+//    ips200_showuint8(0,13,Island_State);
+//    ips200_showuint8(50,12,Left_Up_Find);
+//    ips200_showuint8(100,12,Right_Up_Find);
+//    ips200_showuint8(50,13,Left_Down_Find);
+//    ips200_showuint8(100,13,Right_Down_Find);
+}
+
+
+
+
+
 void center_repair(void){
     int x,y;
+
+
+//对于丢线，查找未丢线边界的变化趋势，映射到丢线区域,
+//直接检查双边丢线情况
+
+//初始化最低行边界
+    if (l_lost_flag[MT9V03X_H - 1] == 0 && r_lost_flag[MT9V03X_H - 1] == 1)
+        r_border_fill[MT9V03X_H - 1] = l_border[MT9V03X_H - 1] + standard_road_wide[MT9V03X_H - 1];
+    else if (l_lost_flag[MT9V03X_H - 1] == 1 && r_lost_flag[MT9V03X_H - 1] == 0)
+        l_border_fill[MT9V03X_H - 1] = r_border[MT9V03X_H - 1] - standard_road_wide[MT9V03X_H - 1];
+    //最低下双边丢线，在十字里，大致处理丢线，为十字保底
+    else if (l_lost_flag[MT9V03X_H - 1] == 1 && r_lost_flag[MT9V03X_H - 1] == 1) 
+    {
+        for (y = MT9V03X_H - 1; y > MT9V03X_H - hightest+1; y--)
+        {
+            //查找双边未丢线点，向上3个点作为上拐点，补线
+            if (l_lost_flag[y] == 1 && r_lost_flag[y] == 1 && l_lost_flag[y-1] == 1 && r_lost_flag[y-1] == 1 && l_lost_flag[y-2] == 1 && r_lost_flag[y-2] == 1)
+            {
+                Lengthen_Left_Boundry(y - 3, MT9V03X_H - 1);
+                Lengthen_Right_Boundry(y - 3, MT9V03X_H - 1);
+            }
+            break;
+        }
+    }
+
+    for (y = MT9V03X_H - 1; y > MT9V03X_H - hightest; y--)
+    {
+        //遍历过的必定为正确的边界
+        //左不丢，右丢
+        if (l_lost_flag[y - 1] == 0 && r_lost_flag[y - 1] == 1)
+            r_border_fill[y - 1] = r_border_fill[y] + abs(l_border[y - 1] - l_border[y]);
+
+        //右不丢，左丢
+        else if (l_lost_flag[y + 1] == 1 && r_lost_flag[y + 1] == 0)
+            l_border_fill[y - 1] = l_border_fill[y] - abs(r_border[y - 1] - r_border[y]);
+    }
+
     //环岛中线修复
     if(Island_State&&cross_flag==0 && ramp_flag==0)
     {
@@ -813,27 +1054,37 @@ void center_repair(void){
         }
     }
 
-    //对于丢线，查找未丢线边界的变化趋势，映射到丢线区域
-
-
-
-
+    //再次修补普通弯道的中线，使用丢线数来给予误差补偿
     else if (straight_flag==0&& Island_State==0&&cross_flag==0 && ramp_flag==0)
     {
         //普通弯道
         //左转弯
+        //设置阈值
+
+        /*   f(x) = p1*x + p2  （0-7）
+         Coefficients:
+       p1 =      0.1795
+       p2 =      -1.795
+       */
         if(l_lost_num>10 &&  r_lost_num<5)
         {
-            
+            err_add = l_lost_num * 0.1795 + -1.795;
         }
-        //右转弯
+        //右转弯(-)
         if (l_lost_num<5 && r_lost_num>10) 
         {
 
-
+            err_add = -(r_lost_num * 0.1795 + -1.795);
         }
-
     }
+
+    //环岛误差补偿
+
+
+
+
+
+
 
 }
 void Zebra_detect(void)
@@ -891,6 +1142,7 @@ void process(void)
     Threshold=my_adapt_threshold(mt9v03x_image[0],MT9V03X_W, MT9V03X_H);
     Image_Binarization(Threshold);//图像二值化
     Longest_White_Column();
+    Cross_Detect();
     Island_Detect();
 //显示用
     for(y=0;y<MT9V03X_H;y++){
