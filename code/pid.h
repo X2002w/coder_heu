@@ -8,9 +8,9 @@
 #ifndef CODE_PID_H_
 #define CODE_PID_H_
 
-#define servos_center 4700//440,4545理论中值
-#define servos_max 5140
-#define servos_min 4260
+#define servos_center 4710//440,4545理论中值
+#define servos_max 5090
+#define servos_min 4330
 
 //电机pid参数
 extern float l_motor_kp;

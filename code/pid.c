@@ -6,17 +6,17 @@
  */
 #include "zf_common_headfile.h"
 //电机pid参数
-float l_motor_kp=9;
-float l_motor_ki=1.3;
+float l_motor_kp=23;
+float l_motor_ki=3.3;
 float l_motor_kd=0;
 
-float r_motor_kp=9;
-float r_motor_ki=1.3;
+float r_motor_kp=23;
+float r_motor_ki=3.3;
 float r_motor_kd=0;
 
 
 //舵机pid参数
-float servo_kp=9.5;
+float servo_kp=11.5;
 float servo_ki=0;
 float servo_kd=0;
 float servo_kp1;

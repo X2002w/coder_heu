@@ -81,7 +81,7 @@ void set_speed(void)
     int y, x;
   
     if (set_mode == 0)
-        target_speed = 370;
+        target_speed = 300;
     else if (set_mode == 1)
         target_speed = 390;
     else if (set_mode == 2)
@@ -275,8 +275,8 @@ void speed_contral(void)
 
 
 
-   // left_speed=target_speed;
-   // right_speed=target_speed;
+    left_speed=target_speed;
+    right_speed=target_speed;
 
 //printf("%d,%d,%d,%d,%d,%d\n",left_encoder,left_speed,Target_Speed_l,right_encoder,right_speed,Target_Speed_r);
 //printf("%d,%d,%d\n\r",right_encoder,right_speed,Target_Speed_r);
