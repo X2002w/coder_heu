@@ -666,3 +666,20 @@ void wifi_spi(void){
     seekfree_assistant_camera_boundary_config(X_BOUNDARY, MT9V03X_H, center_line, r_border_fill, l_border_fill, NULL, NULL, NULL);     // 图像发送时包含三条边线，边线只有横坐标
 
 }
+
+float tempFloat[12] = {0} ;
+uint8 tempData[52] = {0} ;
+
+void sending(void)
+{
+    tempFloat[0]=err;
+    tempFloat[1]=left_encoder;
+    tempFloat[2]=right_encoder;
+  memcpy(tempData, (uint8 *)tempFloat, sizeof(tempFloat));
+
+    tempData[48] = 0x00;
+    tempData[49] = 0x00;
+    tempData[50] = 0x80;
+    tempData[51] = 0x7f;
+    wireless_uart_send_buffer(&tempData[0],52);
+}

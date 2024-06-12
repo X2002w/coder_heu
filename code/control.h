@@ -8,7 +8,7 @@
 #ifndef CODE_CONTROL_H_
 #define CODE_CONTROL_H_
 
-
+extern int left_encoder,right_encoder;//左右编码器读数
 extern int target_speed;//小车车身目标速度
 extern int left_white_num;
 extern int right_white_num;

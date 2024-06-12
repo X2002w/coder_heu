@@ -53,6 +53,7 @@ void core1_main(void)
     disable_Watchdog();                     // 关闭看门狗
     interrupt_global_enable(0);             // 打开全局中断.
     wifi_spi();
+    wireless_uart_init();
     mt9v03x_init();
     imu660ra_init();
     Zero_Point_Detect();
@@ -79,6 +80,7 @@ void core1_main(void)
         // 此处编写需要循环执行的代码
         ips200();
         interface_display();
+        sending();
         //fenglingqi_use();
          memcpy(image_copy[0], mt9v03x_image[0], MT9V03X_IMAGE_SIZE);
              // 发送图像

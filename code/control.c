@@ -17,7 +17,7 @@ int left_encoder,right_encoder;//左右编码器读数
 int left_speed,right_speed;//左右轮差速目标速度
 int Target_Speed_l,Target_Speed_r;//左右轮实际速度
 int speed_ratio=430;//差速系数
-float duty_ratio=0.3;//电机增量误差系数
+float duty_ratio=500;//电机增量误差系数
 int duty;//电机差速增量
 
 
@@ -147,37 +147,54 @@ void speed_contral(void)
 
 
 
-    if (MT9V03X_H-hightest > 20)
+   /* if (MT9V03X_H-hightest > 20)
         duty = (angle - servos_center) * speed_ratio / 100;
     else
         duty = (angle - servos_center) * (speed_ratio - 390) / 100;
 
     //SU400——duty分两种情况，即两种左转右转
-    //计算车身实际速度
+    //计算车身实际速度*/
     center_speed = (left_encoder + right_encoder) / 2;
-    if (duty > 110)
-        duty = 110;
-    else if (duty <= -110)
-        duty = -110;
+    duty = angle - servos_center;
+    if (duty > 440)
+        duty = 440;
+    else if (duty <= -440)
+        duty = -440;
 
 
 
+
+
+
+
+
+    if(Island_State==4){
+
+        duty_ratio=1000;
+    }
+    else {
+        duty_ratio=700;
+    }
 
     if (duty > 0) {
-        //左转
+        left_speed = (int)(target_speed*(1 - ((float)duty_ratio / 1200)*tan(5.137*(float)duty/4.0f*3.14 / 1673) / 0.885));
+        right_speed = target_speed;
+    /*    //左转
         if (abs(duty_ratio * duty) < 35)
             right_speed = target_speed + duty_ratio * duty;
         else
             right_speed = target_speed + 35;
-        left_speed = target_speed - duty;
+        left_speed = target_speed - duty;*/
     }
     else {
         //右转
-        if (abs(duty_ratio * duty) < 35)
+        right_speed = (int)(target_speed*(1 + ((float)duty_ratio / 1200)*tan(5.137*(float)duty/4.0f*3.14 / 1673) / 0.885));
+        left_speed = target_speed;
+      /*  if (abs(duty_ratio * duty) < 35)
             left_speed = target_speed - duty_ratio * duty;//左加速
         else
             left_speed = target_speed + 35;//左加速
-        right_speed = target_speed + duty;//右减速
+        right_speed = target_speed + duty;//右减速*/
     }
 
 
