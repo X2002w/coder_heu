@@ -6,19 +6,20 @@
  */
 #include "zf_common_headfile.h"
 //电机pid参数
-float l_motor_kp=23;
-float l_motor_ki=3.3;
+//跳轮的原因是参数问题，调软，或差速
+float l_motor_kp=9.8;
+float l_motor_ki=1.6;
 float l_motor_kd=0;
 
-float r_motor_kp=23;
-float r_motor_ki=3.3;
+float r_motor_kp=9.8;
+float r_motor_ki=1.6;
 float r_motor_kd=0;
 
 
 //舵机pid参数
-float servo_kp=11.5;
+float servo_kp=9.5;
 float servo_ki=0;
-float servo_kd=0;
+float servo_kd=2.2;
 float servo_kp1;
 
 int pid_servo(float Err)
@@ -35,8 +36,8 @@ int pid_servo(float Err)
 
     if(servo_kp1>=13.5)
         servo_kp1=13.5;
-    servo_kd=servo_kp1*0.35;
-    duty=servo_kp*err+servo_kd*(err-l_err)-imu660ra_gyro_z*0.03;
+    //servo_kd=servo_kp*0.15;
+    duty=servo_kp*err+servo_kd*(err-l_err);//-imu660ra_gyro_z*0.03;
    // printf("%d,%d,%d\n",imu660ra_gyro_x,imu660ra_gyro_y,imu660ra_gyro_z);
     // duty=-imu660ra_gyro_z*0.12;
     l_err=err;
