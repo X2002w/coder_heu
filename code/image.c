@@ -418,41 +418,14 @@ float Err_Sum(void)
         err = err / weight_count;
     }
 
-
-
     else 
     {
-        //搜索截至行超过最大主行，从搜索截至行处重新给予权重(主行之后)
-        if ((MT9V03X_H - hightest) >= 37 && (MT9V03X_H - hightest) <= 54)
+        for (i = MT9V03X_H - 1; i >= MT9V03X_H - hightest - 1; i--)//常规误差计算
         {
-            for (i = (MT9V03X_H - hightest); i > (MT9V03X_H - hightest) + 12; i++)
-            {
-                Weight[i] = weight_part[i - (MT9V03X_H - hightest)+11];
-            }
-
-            for (i = MT9V03X_H - 1; i >= MT9V03X_H - hightest - 1; i--)//常规误差计算
-            {
-                err += (MT9V03X_W / 2 - ((l_border_fill[i] + r_border_fill[i]) >> 1)) * Weight[i];//右移1位，等效除2
-                weight_count += Weight[i];
-            }
-            err = err / weight_count;
+            err += (MT9V03X_W / 2 - ((l_border_fill[i] + r_border_fill[i]) >> 1)) * Weight[i];//右移1位，等效除2
+            weight_count += Weight[i];
         }
-
-        else if ((MT9V03X_H - hightest) > 54) //舍弃权重，使用搜索截至行
-        {
-            err = MT9V03X_W / 2 - ((l_border_fill[MT9V03X_H - hightest] + r_border_fill[MT9V03X_H - hightest]) >> 1);
-        }
-
-        else
-        {
-
-            for (i = MT9V03X_H - 1; i >= MT9V03X_H - hightest - 1; i--)//常规误差计算
-            {
-                err += (MT9V03X_W / 2 - ((l_border_fill[i] + r_border_fill[i]) >> 1)) * Weight[i];//右移1位，等效除2
-                weight_count += Weight[i];
-            }
-            err = err / weight_count;
-        }
+        err = err / weight_count;
     }
 
 
@@ -777,7 +750,7 @@ void center_repair(void){
     //环岛中线修复
     if(Island_State&&cross_flag==0 && ramp_flag==0)
     {
-        if(Island_State==2 || Island_State==5 || Island_State==6 || Island_State==7 || Island_State==8)
+        if(Island_State==1|| Island_State==2  || Island_State==8|| Island_State == 9)
         {
             if(Left_Island_Flag)
             {
@@ -798,17 +771,11 @@ void center_repair(void){
         {
             if (Left_Island_Flag)
             {
-                for (y = 0; y < MT9V03X_H; y++)
-                {
-                    l_border_fill[y] = r_border_fill[y] - standard_road_wide[y] / 2;
-                }
+               
             }
             if (Right_Island_Flag)
             {
-                for (y = 0; y < MT9V03X_H; y++)
-                {
-                    r_border_fill[y] = l_border_fill[y] + standard_road_wide[y] / 2;
-                }
+
             }
         }
     }
