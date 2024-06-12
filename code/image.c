@@ -15,9 +15,12 @@ uint8 per_image[MT9V03X_H][MT9V03X_W];
 //定义边线数组
 int l_border[MT9V03X_H];
 int r_border[MT9V03X_H];
-uint8 l_border_fill[MT9V03X_H];
+uint8 l_border_fill[MT9V03X_H];//wifi图传用，元素补线，无边界丢线处理
 uint8 r_border_fill[MT9V03X_H];
+int l_border_repair[MT9V03X_H];//最终边线，元素补线，边界丢线处理
+int r_border_repair[MT9V03X_H];
 uint8 center_line[MT9V03X_H];
+int center_line_repair[MT9V03X_H];
 
 //定义赛道宽度信息数组
 int road_wide[MT9V03X_H];//实时赛道宽度
@@ -239,7 +242,7 @@ void Longest_White_Column(void)//最长白列巡线
     l_lost_num  = 0;
     l_start = 0;//第一个非丢线点,常规边界起始点
     r_start = 0;
-    l_lost_start = 0；
+    l_lost_start = 0;
     r_lost_start = 0;
     l_r_lostnum = 0;//两边同时丢线数
 
@@ -249,8 +252,10 @@ void Longest_White_Column(void)//最长白列巡线
         l_lost_flag[i] = 0;
         l_border[i] = 0;
         l_border_fill[i] = 0;
+        l_border_repair[i]=0;
         r_border[i] = MT9V03X_W-1;
         r_border_fill[i] = MT9V03X_W-1;
+        r_border_repair[i]=MT9V03X_W-1;
     }
     for(i=0;i<=MT9V03X_W-1;i++)
     {
@@ -317,6 +322,7 @@ void Longest_White_Column(void)//最长白列巡线
             if (bin_image[i][j] ==IMG_WHITE && bin_image[i][j + 1] == IMG_BLACK && bin_image[i][j + 2] == IMG_BLACK)//白黑黑，找到右边界
             {
                 right_border = j;
+
                 r_border_fill[i] = (uint8)j;
                 r_lost_flag[i] = 0; //右丢线数组，丢线置1，不丢线置0
                 break;
@@ -347,8 +353,10 @@ void Longest_White_Column(void)//最长白列巡线
             }
         }
         l_border [i] = left_border;       //左边线线数组
+        l_border_repair[i]=left_border;
       //  l_border_fill [i] = left_border;       //左边线线数组
         r_border[i] = right_border;      //右边线线数组
+        r_border_repair[i]=right_border;
        // r_border_fill[i] = right_border;      //右边线线数组
 
     }
@@ -411,17 +419,17 @@ float Err_Sum(void)
         weight_num = 27;
 
 
-    for (i = weight_num; i > weight_num + 24; i++) 
+    for (i = weight_num; i < weight_num + 24; i++)
     {
         Weight[i] = weight_part[i-weight_num];
     }
 
     //使用13行（17——100cm）以下控制
-    if (MT9V03X_H - hightest <=13) 
+    if ((MT9V03X_H - hightest) <=13)
     {
         for (i = MT9V03X_H - 1; i >=13; i--)//常规误差计算
         {
-            err += (MT9V03X_W / 2 - ((l_border_fill[i] + r_border_fill[i]) >> 1)) * Weight[i];//右移1位，等效除2
+            err += (MT9V03X_W / 2 - ((l_border_repair[i] + r_border_repair[i]) >> 1)) * Weight[i];//右移1位，等效除2
             weight_count += Weight[i];
         }
         err = err / weight_count;
@@ -432,9 +440,9 @@ float Err_Sum(void)
     else 
     {
         //搜索截至行超过最大主行，从搜索截至行处重新给予权重(主行之后)
-        if ((MT9V03X_H - hightest) >= 37 && (MT9V03X_H - hightest) <= 54)
+       /* if ((MT9V03X_H - hightest) >= 37 && (MT9V03X_H - hightest) <= 54)
         {
-            for (i = (MT9V03X_H - hightest); i > (MT9V03X_H - hightest) + 12; i++)
+            for (i = (MT9V03X_H - hightest); i < (MT9V03X_H - hightest) + 12; i++)
             {
                 Weight[i] = weight_part[i - (MT9V03X_H - hightest)+11];
             }
@@ -449,19 +457,19 @@ float Err_Sum(void)
 
         else if ((MT9V03X_H - hightest) > 54) //舍弃权重，使用搜索截至行
         {
-            err = MT9V03X_W / 2 - ((l_border_fill[MT9V03X_H - hightest] + r_border_fill[MT9V03X_H - hightest]) >> 1);
+            err = MT9V03X_W / 2 - ((l_border_fill[MT9V03X_H - hightest+3] + r_border_fill[MT9V03X_H - hightest+3]) >> 1);
         }
 
         else
-        {
+        {*/
 
             for (i = MT9V03X_H - 1; i >= MT9V03X_H - hightest - 1; i--)//常规误差计算
             {
-                err += (MT9V03X_W / 2 - ((l_border_fill[i] + r_border_fill[i]) >> 1)) * Weight[i];//右移1位，等效除2
+                err += (MT9V03X_W / 2 - ((l_border_repair[i] + r_border_repair[i]) >> 1)) * Weight[i];//右移1位，等效除2
                 weight_count += Weight[i];
             }
             err = err / weight_count;
-        }
+       // }
     }
 
 
@@ -510,6 +518,7 @@ void Left_Add_Line(int x1, int y1, int x2, int y2)//左补线,补的是边界
             hx = MT9V03X_W;
         else if (hx <= 0)
             hx = 0;
+        l_border_repair[i] = hx;
         l_border_fill[i] = hx;
     }
 }
@@ -556,6 +565,7 @@ void Right_Add_Line(int x1, int y1, int x2, int y2)//右补线,补的是边界
             hx = MT9V03X_W;
         else if (hx <= 0)
             hx = 0;
+        r_border_repair[i] = hx;
         r_border_fill[i] = hx;
     }
 }
@@ -596,13 +606,16 @@ void Lengthen_Left_Boundry(int start, int end)
         k = (float)(l_border[start] - l_border[start - 4]) / 5.0;//这里的k是1/斜率
         for (i = start; i <= end; i++)
         {
+            l_border_repair[i] = (int)(i - start) * k + l_border_repair[start];//(x=(y-y1)*k+x1),点斜式变形
             l_border_fill[i] = (int)(i - start) * k + l_border_fill[start];//(x=(y-y1)*k+x1),点斜式变形
             if (l_border_fill[i] >= MT9V03X_W - 1)
             {
+                l_border_repair[i] = MT9V03X_W - 1;
                 l_border_fill[i] = MT9V03X_W - 1;
             }
             else if (l_border_fill[i] <= 0)
             {
+                l_border_repair[i] = 0;
                 l_border_fill[i] = 0;
             }
         }
@@ -644,13 +657,16 @@ void Lengthen_Right_Boundry(int start, int end)
         k = (float)(r_border[start] - r_border[start - 4]) / 5.0;//这里的k是1/斜率
         for (i = start; i <= end; i++)
         {
+            r_border_repair[i] = (int)(i - start) * k + r_border_repair[start];//(x=(y-y1)*k+x1),点斜式变形
             r_border_fill[i] = (int)(i - start) * k + r_border_fill[start];//(x=(y-y1)*k+x1),点斜式变形
             if (r_border_fill[i] >= MT9V03X_W - 1)
             {
+                r_border_repair[i]= MT9V03X_W - 1;
                 r_border_fill[i] = MT9V03X_W - 1;
             }
             else if (r_border_fill[i] <= 0)
             {
+                r_border_repair[i] = 0;
                 r_border_fill[i] = 0;
             }
         }
@@ -984,10 +1000,13 @@ void center_repair(void){
 //直接检查双边丢线情况
 
 //初始化最低行边界
-    if (l_lost_flag[MT9V03X_H - 1] == 0 && r_lost_flag[MT9V03X_H - 1] == 1)
-        r_border_fill[MT9V03X_H - 1] = l_border[MT9V03X_H - 1] + standard_road_wide[MT9V03X_H - 1];
-    else if (l_lost_flag[MT9V03X_H - 1] == 1 && r_lost_flag[MT9V03X_H - 1] == 0)
-        l_border_fill[MT9V03X_H - 1] = r_border[MT9V03X_H - 1] - standard_road_wide[MT9V03X_H - 1];
+    /*if (l_lost_flag[MT9V03X_H - 1] == 0 && r_lost_flag[MT9V03X_H - 1] == 1)
+    {
+        r_border_repair[MT9V03X_H - 1] = l_border[MT9V03X_H - 1] + standard_road_wide[MT9V03X_H - 1];
+        printf("%d\n",1);
+    }
+        else if (l_lost_flag[MT9V03X_H - 1] == 1 && r_lost_flag[MT9V03X_H - 1] == 0)
+        l_border_repair[MT9V03X_H - 1] = r_border[MT9V03X_H - 1] - standard_road_wide[MT9V03X_H - 1];
     //最低下双边丢线，在十字里，大致处理丢线，为十字保底
     else if (l_lost_flag[MT9V03X_H - 1] == 1 && r_lost_flag[MT9V03X_H - 1] == 1) 
     {
@@ -1008,49 +1027,50 @@ void center_repair(void){
         //遍历过的必定为正确的边界
         //左不丢，右丢
         if (l_lost_flag[y - 1] == 0 && r_lost_flag[y - 1] == 1)
-            r_border_fill[y - 1] = r_border_fill[y] + abs(l_border[y - 1] - l_border[y]);
+            r_border_repair[y - 1] = r_border_repair[y] + abs(l_border[y - 1] - l_border[y]);
 
         //右不丢，左丢
         else if (l_lost_flag[y + 1] == 1 && r_lost_flag[y + 1] == 0)
-            l_border_fill[y - 1] = l_border_fill[y] - abs(r_border[y - 1] - r_border[y]);
+            l_border_repair[y - 1] = l_border_repair[y] - abs(r_border[y - 1] - r_border[y]);
     }
-
+*/
     //环岛中线修复
     if(Island_State&&cross_flag==0 && ramp_flag==0)
-    {
-        if(Island_State==2 || Island_State==5 || Island_State==6 || Island_State==7 || Island_State==8)
+    {/*
+        if(Island_State==1||Island_State==2 || Island_State==5 || Island_State==6  || Island_State==8)
         {
             if(Left_Island_Flag)
             {
                 for(y=0;y<MT9V03X_H;y++)
                 {
-                    l_border_fill[y]=r_border_fill[y]-standard_road_wide[y]/2;
+                    l_border_repair[y]=r_border_repair[y]-standard_road_wide[y]/2;
                 }
             }
             else if(Right_Island_Flag)
             {
                 for(y=0;y<MT9V03X_H;y++)
                 {
-                    r_border_fill[y]=l_border_fill[y]+standard_road_wide[y]/2;
+                    r_border_repair[y]= l_border_repair[y]+standard_road_wide[y]/2;
                 }
             }
-        }
+        }*/
         if (Island_State == 4) 
         {
-            if (Left_Island_Flag)
-            {
-                for (y = 0; y < MT9V03X_H; y++)
-                {
-                    l_border_fill[y] = r_border_fill[y] - standard_road_wide[y] / 2;
-                }
-            }
-            if (Right_Island_Flag)
-            {
-                for (y = 0; y < MT9V03X_H; y++)
-                {
-                    r_border_fill[y] = l_border_fill[y] + standard_road_wide[y] / 2;
-                }
-            }
+            /*
+             * f(x) = p1*x + p2
+            Coefficients:
+           p1 =      0.3333
+           p2 =      -3.333*/
+            if(l_lost_num>10 &&  r_lost_num<5)
+                   {
+                       err_add = l_lost_num * 0.3333 + -3.333;
+                   }
+                   //右转弯(-)
+                   if (l_lost_num<5 && r_lost_num>10)
+                   {
+
+                       err_add = -(r_lost_num * 0.3333 + -3.333);
+                   }
         }
     }
 
@@ -1122,7 +1142,7 @@ void project(void){
     for(i=0;i<188;i++){
         if(bin_image[MT9V03X_H-3][i]==0){
             sum++;
-            if (sum > 160 && chujie_flag == 0/*&& park_flag!=2 */) {
+            if ((sum > 160) && chujie_flag == 0/*&& park_flag!=2 */) {
                 chujie_flag = 1;
             }
 
@@ -1147,9 +1167,15 @@ void process(void)
 //显示用
     for(y=0;y<MT9V03X_H;y++){
         center_line[y]=(r_border_fill[y]+l_border_fill[y])/2;
+        center_line_repair[y]= (r_border_repair[y] + l_border_repair[y]) / 2;
     }
 
-   // center_repair();
+    center_repair();
+    for(y=0;y<MT9V03X_H;y++){
+        center_line[y]=(r_border_fill[y]+l_border_fill[y])/2;
+        center_line_repair[y] = (r_border_repair[y] + l_border_repair[y]) / 2;
+    }
+
     Zebra_detect();
     set_speed();
     err=Err_Sum();

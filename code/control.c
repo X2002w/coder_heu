@@ -11,7 +11,7 @@
 
 //小车速度相关信息
 int set_mode=0; //小车模式设置，给予不同速度
-int target_speed=370;//小车车身目标速度
+int target_speed=340;//小车车身目标速度
 int center_speed;//小车车身左右编码加权实际速度
 int left_encoder,right_encoder;//左右编码器读数
 int left_speed,right_speed;//左右轮差速目标速度
@@ -81,7 +81,7 @@ void set_speed(void)
     int y, x;
   
     if (set_mode == 0)
-        target_speed = 370;
+        target_speed = 320;
     else if (set_mode == 1)
         target_speed = 390;
     else if (set_mode == 2)
@@ -275,8 +275,8 @@ void speed_contral(void)
 
 
 
-   // left_speed=target_speed;
-   // right_speed=target_speed;
+    left_speed=target_speed;
+    right_speed=target_speed;
 
 //printf("%d,%d,%d,%d,%d,%d\n",left_encoder,left_speed,Target_Speed_l,right_encoder,right_speed,Target_Speed_r);
 //printf("%d,%d,%d\n\r",right_encoder,right_speed,Target_Speed_r);

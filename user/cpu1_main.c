@@ -80,7 +80,7 @@ void core1_main(void)
         ips200();
         interface_display();
         //fenglingqi_use();
-         memcpy(image_copy[0], mt9v03x_image[0], MT9V03X_IMAGE_SIZE);
+         memcpy(image_copy[0], bin_image[0], MT9V03X_IMAGE_SIZE);
              // ·¢ËÍÍ¼Ïñ
          seekfree_assistant_camera_send();
 
