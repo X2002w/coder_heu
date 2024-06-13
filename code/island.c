@@ -716,13 +716,16 @@ void K_Add_Boundry_Left(float k, int startX, int startY, int endY)
     }
     for (i = startY; i >= endY; i--)
     {
+        l_border_repair[i] = (int)((i - startY) / k + startX);//(y-y1)=k(x-x1)变形，x=(y-y1)/k+x1
         l_border_fill[i] = (int)((i - startY) / k + startX);//(y-y1)=k(x-x1)变形，x=(y-y1)/k+x1
         if (l_border_fill[i] >= MT9V03X_W - 1)
         {
+            l_border_repair[i]=MT9V03X_W - 1;
             l_border_fill[i] = MT9V03X_W - 1;
         }
         else if (l_border_fill[i] <= 0)
         {
+            l_border_repair[i]=0;
             l_border_fill[i] = 0;
         }
     }
@@ -756,13 +759,16 @@ void K_Add_Boundry_Right(float k, int startX, int startY, int endY)
     }
     for (i = startY; i >= endY; i--)
     {
+        r_border_repair[i] = (int)((i - startY) / k + startX);//(y-y1)=k(x-x1)变形，x=(y-y1)/k+x1
         r_border_fill[i] = (int)((i - startY) / k + startX);//(y-y1)=k(x-x1)变形，x=(y-y1)/k+x1
         if (r_border_fill[i] >= MT9V03X_W - 1)
         {
+            r_border_repair[i]=MT9V03X_W - 1;
             r_border_fill[i] = MT9V03X_W - 1;
         }
         else if (r_border_fill[i] <= 0)
         {
+            r_border_repair[i]=0;
             r_border_fill[i] = 0;
         }
     }

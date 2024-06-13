@@ -79,7 +79,7 @@ void encoder_get(void){
 void set_speed(void)
 {
     int y, x;
-    target_speed=360;
+    target_speed=380;
     //Ö±µÀ:560;
 
     for (y= MT9V03X_H-1;y>=0;y--)

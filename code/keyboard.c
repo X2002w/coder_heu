@@ -675,6 +675,7 @@ void sending(void)
     tempFloat[0]=err;
     tempFloat[1]=left_encoder;
     tempFloat[2]=right_encoder;
+    tempFloat[3]=Island_State;
   memcpy(tempData, (uint8 *)tempFloat, sizeof(tempFloat));
 
     tempData[48] = 0x00;

@@ -52,14 +52,14 @@ void core1_main(void)
 {
     disable_Watchdog();                     // 关闭看门狗
     interrupt_global_enable(0);             // 打开全局中断.
-    wifi_spi();
+    //wifi_spi();
     wireless_uart_init();
     mt9v03x_init();
     imu660ra_init();
     Zero_Point_Detect();
   //  while (dl1a_init());//测距
 
-    //ips200_init(IPS200_TYPE_PARALLEL8);
+    ips200_init(IPS200_TYPE_PARALLEL8);
     pwm_init(ATOM0_CH1_P33_9,300,4700 );
     pwm_init(ATOM0_CH5_P02_5, 17000, 2500);//you
     pwm_init(ATOM0_CH7_P02_7, 17000, 2500);//zuo
@@ -82,9 +82,9 @@ void core1_main(void)
         interface_display();
         sending();
         //fenglingqi_use();
-         memcpy(image_copy[0], mt9v03x_image[0], MT9V03X_IMAGE_SIZE);
+         //memcpy(image_copy[0], bin_image[0], MT9V03X_IMAGE_SIZE);
              // 发送图像
-         seekfree_assistant_camera_send();
+        // seekfree_assistant_camera_send();
 
 
 

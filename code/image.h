@@ -24,7 +24,10 @@ extern int l_border[MT9V03X_H];
 extern int r_border[MT9V03X_H];
 extern uint8 l_border_fill[MT9V03X_H];
 extern uint8 r_border_fill[MT9V03X_H];
-extern uint8 center_line[MT9V03X_H];
+extern int l_border_repair[MT9V03X_H];//最终边线
+extern int r_border_repair[MT9V03X_H];
+extern uint8 center_line[MT9V03X_H];//图传用
+extern int center_line_repair[MT9V03X_H];
 
 extern int hightest;//搜索截止行
 
