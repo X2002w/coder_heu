@@ -44,8 +44,8 @@ void number3(void);
 void flash_read(void);
 void flash_deal(void);
 
-void fenglingqi_use(void);
-void fengmingqi(void);
+
+void sending(void);
 void wifi_spi(void);
 
 

@@ -161,11 +161,11 @@ void Island_Detect()
                 left_up_point[0] = Find_Left_Up_Point(40, 5);//找左上拐点
                 left_up_point[1] = l_border[left_up_point[0]];
 
-                if (left_up_point[0] < 5)//此处为了防止误判，如果经常从3状态归零，建议修改此处判断条件
+               /* if (left_up_point[0] < 5)//此处为了防止误判，如果经常从3状态归零，建议修改此处判断条件
                 {
                     Island_State = 0;
                     Left_Island_Flag = 0;
-                }
+                }*/
 
                 if (k == 0 && (15 <= left_up_point[0] && left_up_point[0] < 50) && (50 < left_up_point[1] && left_up_point[1] < 110))//拐点出现在一定范围内，认为是拐点出现
                 {

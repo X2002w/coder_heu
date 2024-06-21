@@ -68,5 +68,6 @@ void Left_Add_Line(int x1, int y1, int x2, int y2);//左补线,补的是边界
 void Right_Add_Line(int x1, int y1, int x2, int y2);//右补线,补的是边界
 void Draw_Line(int startX, int startY, int endX, int endY);
 void center_repair(void);
+void buzzer(void);
 void process(void);
 #endif /* CODE_IMAGE_H_ */

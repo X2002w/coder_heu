@@ -439,37 +439,12 @@ float Err_Sum(void)
 
     else 
     {
-        //搜索截至行超过最大主行，从搜索截至行处重新给予权重(主行之后)
-       /* if ((MT9V03X_H - hightest) >= 37 && (MT9V03X_H - hightest) <= 54)
-        {
-            for (i = (MT9V03X_H - hightest); i < (MT9V03X_H - hightest) + 12; i++)
-            {
-                Weight[i] = weight_part[i - (MT9V03X_H - hightest)+11];
-            }
-
-            for (i = MT9V03X_H - 1; i >= MT9V03X_H - hightest - 1; i--)//常规误差计算
-            {
-                err += (MT9V03X_W / 2 - ((l_border_fill[i] + r_border_fill[i]) >> 1)) * Weight[i];//右移1位，等效除2
-                weight_count += Weight[i];
-            }
-            err = err / weight_count;
-        }
-
-        else if ((MT9V03X_H - hightest) > 54) //舍弃权重，使用搜索截至行
-        {
-            err = MT9V03X_W / 2 - ((l_border_fill[MT9V03X_H - hightest+3] + r_border_fill[MT9V03X_H - hightest+3]) >> 1);
-        }
-
-        else
-        {*/
-
             for (i = MT9V03X_H - 1; i >= MT9V03X_H - hightest - 1; i--)//常规误差计算
             {
                 err += (MT9V03X_W / 2 - ((l_border_repair[i] + r_border_repair[i]) >> 1)) * Weight[i];//右移1位，等效除2
                 weight_count += Weight[i];
             }
             err = err / weight_count;
-       // }
     }
 
 
@@ -829,22 +804,22 @@ void Find_Down_Point(int start, int end)
     for (i = start; i >= end; i--)
     {
         if (Left_Down_Find == 0 &&//只找第一个符合条件的点
-            abs(l_border[i] - l_border[i + 1]) <= 5 &&//角点的阈值可以更改
-            abs(l_border[i + 1] - l_border[i + 2]) <= 5 &&
+            abs(l_border[i] - l_border[i + 1]) <= 3 &&//角点的阈值可以更改
+            abs(l_border[i + 1] - l_border[i + 2]) <= 4 &&
             abs(l_border[i + 2] - l_border[i + 3]) <= 5 &&
-            (l_border[i] - l_border[i - 2]) >= 8 &&
-            (l_border[i] - l_border[i - 3]) >= 15 &&
-            (l_border[i] - l_border[i - 4]) >= 15)
+            (l_border[i] - l_border[i - 2]) >= 7 &&
+            (l_border[i] - l_border[i - 3]) >= 8 &&
+            (l_border[i] - l_border[i - 4]) >= 9)
         {
             Left_Down_Find = i;//获取行数即可
         }
         if (Right_Down_Find == 0 &&//只找第一个符合条件的点
-            abs(r_border[i] - r_border[i + 1]) <= 5 &&//角点的阈值可以更改
-            abs(r_border[i + 1] - r_border[i + 2]) <= 5 &&
+            abs(r_border[i] - r_border[i + 1]) <= 2 &&//角点的阈值可以更改
+            abs(r_border[i + 1] - r_border[i + 2]) <= 3 &&
             abs(r_border[i + 2] - r_border[i + 3]) <= 5 &&
-            (r_border[i] - r_border[i - 2]) <= -8 &&
-            (r_border[i] - r_border[i - 3]) <= -15 &&
-            (r_border[i] - r_border[i - 4]) <= -15)
+            (r_border[i] - r_border[i - 2]) <= -7 &&
+            (r_border[i] - r_border[i - 3]) <= -8 &&
+            (r_border[i] - r_border[i - 4]) <= -9)
         {
             Right_Down_Find = i;
         }
@@ -884,22 +859,22 @@ void Find_Up_Point(int start, int end)
     for (i = start; i >= end; i--)
     {
         if (Left_Up_Find == 0 &&//只找第一个符合条件的点
-            abs(l_border[i] - l_border[i - 1]) <= 5 &&
-            abs(l_border[i - 1] - l_border[i - 2]) <= 5 &&
+            abs(l_border[i] - l_border[i - 1]) <= 2 &&
+            abs(l_border[i - 1] - l_border[i - 2]) <= 3 &&
             abs(l_border[i - 2] - l_border[i - 3]) <= 5 &&
-            (l_border[i] - l_border[i + 2]) >= 8 &&
-            (l_border[i] - l_border[i + 3]) >= 15 &&
-            (l_border[i] - l_border[i + 4]) >= 15)
+            (l_border[i] - l_border[i + 2]) >= 7 &&
+            (l_border[i] - l_border[i + 3]) >= 8 &&
+            (l_border[i] - l_border[i + 4]) >= 9)
         {
             Left_Up_Find = i;//获取行数即可
         }
         if (Right_Up_Find == 0 &&//只找第一个符合条件的点
-            abs(r_border[i] - r_border[i - 1]) <= 5 &&//下面两行位置差不多
-            abs(r_border[i - 1] - r_border[i - 2]) <= 5 &&
+            abs(r_border[i] - r_border[i - 1]) <= 2 &&//下面两行位置差不多
+            abs(r_border[i - 1] - r_border[i - 2]) <= 3 &&
             abs(r_border[i - 2] - r_border[i - 3]) <= 5 &&
-            (r_border[i] - r_border[i + 2]) <= -8 &&
-            (r_border[i] - r_border[i + 3]) <= -15 &&
-            (r_border[i] - r_border[i + 4]) <= -15)
+            (r_border[i] - r_border[i + 2]) <= -7 &&
+            (r_border[i] - r_border[i + 3]) <= -8 &&
+            (r_border[i] - r_border[i + 4]) <= -9)
         {
             Right_Up_Find = i;//获取行数即可
         }
@@ -999,28 +974,6 @@ void center_repair(void){
 //对于丢线，查找未丢线边界的变化趋势，映射到丢线区域,
 //直接检查双边丢线情况
 
-//初始化最低行边界
-    /*if (l_lost_flag[MT9V03X_H - 1] == 0 && r_lost_flag[MT9V03X_H - 1] == 1)
-    {
-        r_border_repair[MT9V03X_H - 1] = l_border[MT9V03X_H - 1] + standard_road_wide[MT9V03X_H - 1];
-        printf("%d\n",1);
-    }
-        else if (l_lost_flag[MT9V03X_H - 1] == 1 && r_lost_flag[MT9V03X_H - 1] == 0)
-        l_border_repair[MT9V03X_H - 1] = r_border[MT9V03X_H - 1] - standard_road_wide[MT9V03X_H - 1];
-    //最低下双边丢线，在十字里，大致处理丢线，为十字保底
-    else if (l_lost_flag[MT9V03X_H - 1] == 1 && r_lost_flag[MT9V03X_H - 1] == 1) 
-    {
-        for (y = MT9V03X_H - 1; y > MT9V03X_H - hightest+1; y--)
-        {
-            //查找双边未丢线点，向上3个点作为上拐点，补线
-            if (l_lost_flag[y] == 1 && r_lost_flag[y] == 1 && l_lost_flag[y-1] == 1 && r_lost_flag[y-1] == 1 && l_lost_flag[y-2] == 1 && r_lost_flag[y-2] == 1)
-            {
-                Lengthen_Left_Boundry(y - 3, MT9V03X_H - 1);
-                Lengthen_Right_Boundry(y - 3, MT9V03X_H - 1);
-            }
-            break;
-        }
-    }
 
     for (y = MT9V03X_H - 1; y > MT9V03X_H - hightest; y--)
     {
@@ -1033,29 +986,30 @@ void center_repair(void){
         else if (l_lost_flag[y + 1] == 1 && r_lost_flag[y + 1] == 0)
             l_border_repair[y - 1] = l_border_repair[y] - abs(r_border[y - 1] - r_border[y]);
     }
-*/
+
     //环岛中线修复
     if(Island_State&&cross_flag==0 && ramp_flag==0)
-    {/*
-        if(Island_State==1||Island_State==2 || Island_State==5 || Island_State==6  || Island_State==8)
+    {
+        if(Island_State==1||Island_State==2 || Island_State==8)
         {
             if(Left_Island_Flag)
             {
                 for(y=0;y<MT9V03X_H;y++)
                 {
-                    l_border_repair[y]=r_border_repair[y]-standard_road_wide[y]/2;
+                    l_border_repair[y]=r_border_repair[y]-standard_road_wide[y];
                 }
             }
             else if(Right_Island_Flag)
             {
                 for(y=0;y<MT9V03X_H;y++)
                 {
-                    r_border_repair[y]= l_border_repair[y]+standard_road_wide[y]/2;
+                    r_border_repair[y]= l_border_repair[y]+standard_road_wide[y];
                 }
             }
-        }*/
+        }
         if (Island_State == 4) 
         {
+            //环岛误差补偿
             /*
              * f(x) = p1*x + p2
             Coefficients:
@@ -1098,7 +1052,7 @@ void center_repair(void){
         }
     }
 
-    //环岛误差补偿
+
 
 
 
@@ -1135,6 +1089,21 @@ void Zebra_detect(void)
 
 
 }
+
+
+void buzzer(void)
+{
+    if (cross_flag || Island_State || ramp_flag || zebra_line_flag)
+    {
+        gpio_set_level(P33_10, 1);
+    }
+    else
+    {
+        gpio_set_level(P33_10, 0);
+    }
+}
+
+
 
 void project(void){
     int sum=0;
