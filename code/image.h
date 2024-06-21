@@ -22,9 +22,12 @@ extern uint8 bin_image[MT9V03X_H][MT9V03X_W];
 //定义边线数组
 extern int l_border[MT9V03X_H];
 extern int r_border[MT9V03X_H];
-extern uint8 l_border_fill[MT9V03X_H];
+extern uint8 l_border_fill[MT9V03X_H];//图传用
 extern uint8 r_border_fill[MT9V03X_H];
-extern uint8 center_line[MT9V03X_H];
+extern int l_border_repair[MT9V03X_H];//最终边线
+extern int r_border_repair[MT9V03X_H];
+extern uint8 center_line[MT9V03X_H];//图传用
+extern int center_line_repair[MT9V03X_H];
 
 extern int hightest;//搜索截止行
 
@@ -65,5 +68,6 @@ void Left_Add_Line(int x1, int y1, int x2, int y2);//左补线,补的是边界
 void Right_Add_Line(int x1, int y1, int x2, int y2);//右补线,补的是边界
 void Draw_Line(int startX, int startY, int endX, int endY);
 void center_repair(void);
+void buzzer(void);
 void process(void);
 #endif /* CODE_IMAGE_H_ */

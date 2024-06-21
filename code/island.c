@@ -161,11 +161,11 @@ void Island_Detect()
                 left_up_point[0] = Find_Left_Up_Point(40, 5);//找左上拐点
                 left_up_point[1] = l_border[left_up_point[0]];
 
-                if (left_up_point[0] < 5)//此处为了防止误判，如果经常从3状态归零，建议修改此处判断条件
+               /* if (left_up_point[0] < 5)//此处为了防止误判，如果经常从3状态归零，建议修改此处判断条件
                 {
                     Island_State = 0;
                     Left_Island_Flag = 0;
-                }
+                }*/
 
                 if (k == 0 && (15 <= left_up_point[0] && left_up_point[0] < 50) && (50 < left_up_point[1] && left_up_point[1] < 110))//拐点出现在一定范围内，认为是拐点出现
                 {
@@ -275,11 +275,11 @@ void Island_Detect()
                 right_up_point[0] = Find_Right_Up_Point(40, 10);//找右上拐点
                 right_up_point[1] = r_border[right_up_point[0]];
 
-                if (right_up_point[0] < 10)//这里改过，此处为了防止环岛误判，如果经常出现环岛3归零，请修改此处判断条件
+                /*if (right_up_point[0] < 10)//这里改过，此处为了防止环岛误判，如果经常出现环岛3归零，请修改此处判断条件
                 {
                     Island_State = 0;
                     Right_Island_Flag = 0;
-                }
+                }*/
 
                 if (k == 0 && (15 <= right_up_point[0] && right_up_point[0] < 50) && (70 < right_up_point[1] && right_up_point[1] < 150))//找第一个符合条件的角点，连线
                 {
@@ -464,12 +464,12 @@ int Find_Left_Down_Point(int start, int end)//找四个角点，返回值是角点所在的行数
     for (i = start; i >= end; i--)
     {
         if (left_down_line == 0 &&//只找第一个符合条件的点
-            abs(l_border[i] - l_border[i + 1]) <= 5 &&//角点的阈值可以更改
-            abs(l_border[i + 1] - l_border[i + 2]) <= 5 &&
+            abs(l_border[i] - l_border[i + 1]) <= 3 &&//角点的阈值可以更改
+            abs(l_border[i + 1] - l_border[i + 2]) <= 4 &&
             abs(l_border[i + 2] - l_border[i + 3]) <= 5 &&
-            (l_border[i] - l_border[i - 2]) >= 5 &&
-            (l_border[i] - l_border[i - 3]) >= 10 &&
-            (l_border[i] - l_border[i - 4]) >= 10)
+            (l_border[i] - l_border[i - 2]) >= 3 &&
+            (l_border[i] - l_border[i - 3]) >= 5 &&
+            (l_border[i] - l_border[i - 4]) >= 7)
         {
             left_down_line = i;//获取行数即可
             break;

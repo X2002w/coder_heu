@@ -10,15 +10,21 @@
 
 
 //小车速度相关信息
-int set_mode=0; //小车模式设置，给予不同速度
-int target_speed=370;//小车车身目标速度
+int set_mode=1; //小车模式设置，给予不同速度
+int target_speed=340;//小车车身目标速度
 int center_speed;//小车车身左右编码加权实际速度
 int left_encoder,right_encoder;//左右编码器读数
 int left_speed,right_speed;//左右轮差速目标速度
 int Target_Speed_l,Target_Speed_r;//左右轮实际速度
-int speed_ratio=4.3;//差速系数
+int speed_ratio=110;//差速系数
 float duty_ratio=0.12;//电机增量误差系数
 int duty;//电机差速增量
+
+
+//速度策略相关,差速，不降速
+int straight_jia;
+int island_jia;
+int ramp_jia;
 
 
 
@@ -26,49 +32,12 @@ int left_white_num=0;
 int right_white_num=0;
 int speed_map;//最终用于映射的白点
 float straight_dis;//现实实际距离映射
-/*-------------------------------------------------------------------------------------------------------------------
-  @brief     利用Vofa发数据
-  @param     data1，data2，data3，data4，data5，data6，要发的数据放进入参即可
-  @return    null
-  Sample     Vofa_data(Steer_Angle,Err,Speed_Left_Real,Speed_Left_Set,Speed_Right_Real,Speed_Right_Set,dl1a_distance_mm);
-  @note      如果不够用，继续往后加入参即可，继续加参数参考原则见下注释
--------------------------------------------------------------------------------------------------------------------*/
-void Vofa_data(int data1,int data2,int data3,int data4,int data5,int data6,int data7)
-{
-    int data[7];
-    float tempFloat[7];   //定义的临时变量
-    uint8 tempData[32];   //定义的传输Buffer，一个int，float数字占4个字节，如果传7个，4*7=28，后面还有四个校验位，28+4=32
-
-    data[0] = data1;
-    data[1] = data2;
-    data[2] = data3;
-    data[3] = data4;
-    data[4] = data5;
-    data[5] = data6;
-    data[6] = data7;
-
-    tempFloat[0] = (float)data[0];     //转成浮点数
-    tempFloat[1] = (float)data[1];
-    tempFloat[2] = (float)data[2];
-    tempFloat[3] = (float)data[3];
-    tempFloat[4] = (float)data[4];
-    tempFloat[5] = (float)data[5];
-    tempFloat[6] = (float)data[6];
-
-    memcpy(tempData, (uint8 *)tempFloat, sizeof(tempFloat));  //通过拷贝把数据重新整理
-
-    tempData[28] = 0x00;//写入结尾数据
-    tempData[39] = 0x00;
-    tempData[30] = 0x80;
-    tempData[31] = 0x7f;
-
-    uart_write_buffer(UART_3, tempData, 32);//通过串口传输数据，前面开多大的数组，后面占多大长度
-}
 
 
 void encoder_get(void){
     left_encoder=encoder_get_count(TIM6_ENCODER)*-1;
     right_encoder=encoder_get_count(TIM2_ENCODER);
+    center_speed = (left_encoder + right_encoder) / 2;
   //  printf("%d,%d\n\r",left_encoder,right_encoder);
 
     encoder_clear_count(TIM6_ENCODER);
@@ -80,8 +49,10 @@ void set_speed(void)
 {
     int y, x;
   
+    //设置弯道速度为基础速度
+
     if (set_mode == 0)
-        target_speed = 370;
+        target_speed = 320;
     else if (set_mode == 1)
         target_speed = 390;
     else if (set_mode == 2)
@@ -100,7 +71,6 @@ void set_speed(void)
         target_speed = 530;
     else if (set_mode == 9)
         target_speed = 560;
-    //直道:560;
 
     for (y= MT9V03X_H-1;y>=0;y--)
     {
@@ -150,13 +120,39 @@ Coefficients (with 95% confidence bounds):
         if(straight_dis>250)straight_dis=250;
         else if(straight_dis<1)straight_dis=1;
 
-        /*     f(x) = p1*x^2 + p2*x + p3
+
+
+        //长直道速度
+        if (straight_flag && Island_State==0&&ramp_flag==0&& zebra_line_flag==0)
+        {
+            target_speed += straight_jia;
+        }
+        //环岛速度
+        else if (straight_flag==0&& Island_State&& ramp_flag == 0 && zebra_line_flag == 0)
+        {
+            target_speed += island_jia;
+        }
+        //坡道速度
+        else if (straight_flag == 0 && Island_State==0 && ramp_flag && zebra_line_flag == 0)
+        {
+            target_speed += ramp_jia;
+        }
+        //出界，斑马线速度
+        else if ((straight_flag == 0 && Island_State == 0 && ramp_flag==0 && zebra_line_flag)|| chujie_flag == 1)
+        {
+            target_speed = 0;
+        }
+        //其他情况，速度映射
+        else
+        {
+            /*         f(x) = a*x*x+b
 Coefficients (with 95% confidence bounds):
-       p1 =    0.003075  (-0.005807, 0.01196)
-       p2 =      0.7278  (-0.8917, 2.347)
-       p3 =       313.6  (253.6, 373.5)
+       a =    0.007708  (0.006841, 0.008575)
+       b =       322.5  (310.4, 334.6)
          * */
-        //target_speed=0.003075*straight_dis*straight_dis+0.7278*straight_dis+313.6;
+          //  5:8
+            target_speed= 0.007708 *straight_dis*straight_dis+ 322.5;
+        }
 
     if(chujie_flag==1||zebra_line_flag>=2)
         target_speed=0;
@@ -168,15 +164,15 @@ void speed_contral(void)
 
 
    //舵机误差范围，正负430
-    if (straight_dis < 140)//不是长直道
-        duty = (angle - servos_center) * speed_ratio ;
+    if (straight_dis < 140 && hightest>40)//不是长直道
+        duty = (angle - servos_center)*speed_ratio/100;
     else
-        duty = (angle - servos_center) * (speed_ratio - 3.9);
+        duty = (angle - servos_center) * (speed_ratio - 105)/100;
         
     //SU400——duty分两种情况，即两种左转右转
     //计算车身实际速度
    // center_speed = (left_encoder + right_encoder) / 2;
-    duty = angle - servos_center;
+   // duty = angle - servos_center;
     if (duty > 430)
         duty = 430;
     else if (duty <= -430)
@@ -186,7 +182,9 @@ void speed_contral(void)
 
 
     //差速的各种方式，待更改
-    if (duty > 0) {
+
+    //普通弯道
+   if (duty > 0) {
         //左转
         if (abs(duty_ratio * duty) < 35)//右加速限幅，防止侧翻
             right_speed = target_speed + duty_ratio * duty;
@@ -203,11 +201,12 @@ void speed_contral(void)
         right_speed = target_speed + duty;//右减速
     }
 
+   //环岛差速
     if (Left_Island_Flag || Left_Island_Flag)
     {
-        if (Island_State == 4) 
+        if (Island_State == 4)
         {
-            duty_ratio = 0.32;
+            duty_ratio = 0.32;//外轮是否加速
             if (duty > 0) {
                 //左转
                 if (abs(duty_ratio * duty) < 80)//右加速限幅，防止侧翻
@@ -225,9 +224,14 @@ void speed_contral(void)
                 right_speed = target_speed +  duty;//右减速
             }
         }
-        else 
+        else if(Island_State==3|| Island_State==5|| Island_State==6|| Island_State==7|| Island_State==8)
         {//其他环岛状态，快速出入环
-            duty_ratio = 0;
+            duty = (angle - servos_center) * speed_ratio / 100;
+            if (duty > 430)
+                duty = 430;
+            else if (duty <= -430)
+                duty = -430;
+            duty_ratio = 0;//外轮是否加速
             if (duty > 0) {
                 //左转
                 if (abs(duty_ratio * duty) < 60)//右加速限幅，防止侧翻
@@ -245,38 +249,37 @@ void speed_contral(void)
                 right_speed = target_speed + duty;//右减速
             }
         }
-
-    }
-
-
-
-
-    if (duty > 0) {
-        //左转
-        if (abs(duty_ratio * duty) < 35)//右加速限幅，防止侧翻
-            right_speed = target_speed + duty_ratio * duty;
         else
-            right_speed = target_speed + 35;
-        left_speed = target_speed - duty_ratio*duty;
+        {
+            duty = (angle - servos_center) * (speed_ratio - 105) / 100;
+            if (duty > 430)
+                duty = 430;
+            else if (duty <= -430)
+                duty = -430;
+            duty_ratio = 0;//外轮是否加速
+            if (duty > 0) {
+                //左转
+                if (abs(duty_ratio * duty) < 60)//右加速限幅，防止侧翻
+                    right_speed = target_speed + duty_ratio * duty;
+                else
+                    right_speed = target_speed + 60;
+                left_speed = target_speed - duty;
+            }
+            else {
+                //右转
+                if (abs(duty_ratio * duty) < 60)//左加速限幅，防止侧翻
+                    left_speed = target_speed - duty_ratio * duty;//左加速
+                else
+                    left_speed = target_speed + 60;//左不变
+                right_speed = target_speed + duty;//右减速
+            }
+        }
+
     }
-    else {
-        //右转
-        if (abs(duty_ratio * duty) < 35)//左加速限幅，防止侧翻
-            left_speed = target_speed - duty_ratio * duty;//左加速
-        else
-            left_speed = target_speed + 35;//左加速
-        right_speed = target_speed + duty_ratio * duty;//右减速
-    }
 
 
-
-
-
-
-
-
-   // left_speed=target_speed;
-   // right_speed=target_speed;
+  //  left_speed=target_speed;
+    //right_speed=target_speed;
 
 //printf("%d,%d,%d,%d,%d,%d\n",left_encoder,left_speed,Target_Speed_l,right_encoder,right_speed,Target_Speed_r);
 //printf("%d,%d,%d\n\r",right_encoder,right_speed,Target_Speed_r);
