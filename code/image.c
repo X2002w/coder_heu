@@ -990,7 +990,7 @@ void center_repair(void){
     //环岛中线修复
     if(Island_State&&cross_flag==0 && ramp_flag==0)
     {
-        if(Island_State==1||Island_State==2 || Island_State==8)
+      /*  if(Island_State==1||Island_State==2 || Island_State==8)
         {
             if(Left_Island_Flag)
             {
@@ -1006,7 +1006,7 @@ void center_repair(void){
                     r_border_repair[y]= l_border_repair[y]+standard_road_wide[y];
                 }
             }
-        }
+        }*/
         if (Island_State == 4) 
         {
             //环岛误差补偿
@@ -1055,12 +1055,21 @@ void center_repair(void){
 
 
 
-
-
-
-
-
 }
+
+
+void straight_detect(void) 
+{
+    if (straight_flag == 0 && straight_dis > 200 && hightest<40)
+    {
+        straight_flag = 1;
+    }
+    else 
+        straight_flag = 0;
+}
+
+
+
 void Zebra_detect(void)
 {
     int j;
@@ -1132,7 +1141,8 @@ void process(void)
     Image_Binarization(Threshold);//图像二值化
     Longest_White_Column();
     Cross_Detect();
-    Island_Detect();
+    //Island_Detect();
+    straight_detect();
 //显示用
     for(y=0;y<MT9V03X_H;y++){
         center_line[y]=(r_border_fill[y]+l_border_fill[y])/2;
@@ -1147,6 +1157,7 @@ void process(void)
 
     Zebra_detect();
     set_speed();
+   // err=Err_Sum()+err_add;
     err=Err_Sum();
     angle=pid_servo(err);
     pwm_set_duty(ATOM0_CH1_P33_9, angle);

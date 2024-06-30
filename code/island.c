@@ -143,7 +143,7 @@ void Island_Detect()
             monotonicity_change_line[0] = Monotonicity_Change_Left(70, 10);//寻找单调性改变点
             monotonicity_change_line[1] = l_border[monotonicity_change_line[0]];
             Left_Add_Line((int)(monotonicity_change_line[1] * 0.1), MT9V03X_H - 1, monotonicity_change_line[1], monotonicity_change_line[0]);
-            if (Island_State == 2 && (l_start >= MT9V03X_H - 5 || monotonicity_change_line[0] > 50))//当圆弧靠下时候，进3
+            if (Island_State == 2 && (l_start >= MT9V03X_H - 3 || monotonicity_change_line[0] > 50))//当圆弧靠下时候，进3
             {
                 Island_State = 3;//最长白列寻找范围也要改，见camera.c
                 Left_Island_Flag = 1;
@@ -161,11 +161,11 @@ void Island_Detect()
                 left_up_point[0] = Find_Left_Up_Point(40, 5);//找左上拐点
                 left_up_point[1] = l_border[left_up_point[0]];
 
-               /* if (left_up_point[0] < 5)//此处为了防止误判，如果经常从3状态归零，建议修改此处判断条件
+               if (left_up_point[0] < 5)//此处为了防止误判，如果经常从3状态归零，建议修改此处判断条件
                 {
                     Island_State = 0;
                     Left_Island_Flag = 0;
-                }*/
+                }
 
                 if (k == 0 && (15 <= left_up_point[0] && left_up_point[0] < 50) && (50 < left_up_point[1] && left_up_point[1] < 110))//拐点出现在一定范围内，认为是拐点出现
                 {
@@ -275,11 +275,11 @@ void Island_Detect()
                 right_up_point[0] = Find_Right_Up_Point(40, 10);//找右上拐点
                 right_up_point[1] = r_border[right_up_point[0]];
 
-                /*if (right_up_point[0] < 10)//这里改过，此处为了防止环岛误判，如果经常出现环岛3归零，请修改此处判断条件
+                if (right_up_point[0] < 10)//这里改过，此处为了防止环岛误判，如果经常出现环岛3归零，请修改此处判断条件
                 {
                     Island_State = 0;
                     Right_Island_Flag = 0;
-                }*/
+                }
 
                 if (k == 0 && (15 <= right_up_point[0] && right_up_point[0] < 50) && (70 < right_up_point[1] && right_up_point[1] < 150))//找第一个符合条件的角点，连线
                 {
@@ -717,13 +717,16 @@ void K_Add_Boundry_Left(float k, int startX, int startY, int endY)
     for (i = startY; i >= endY; i--)
     {
         l_border_fill[i] = (int)((i - startY) / k + startX);//(y-y1)=k(x-x1)变形，x=(y-y1)/k+x1
+        l_border_repair[i] = (int)((i - startY) / k + startX);//(y-y1)=k(x-x1)变形，x=(y-y1)/k+x1
         if (l_border_fill[i] >= MT9V03X_W - 1)
         {
             l_border_fill[i] = MT9V03X_W - 1;
+            l_border_repair[i] = MT9V03X_W - 1;
         }
         else if (l_border_fill[i] <= 0)
         {
             l_border_fill[i] = 0;
+            l_border_repair[i] = MT9V03X_W - 1;
         }
     }
 }
@@ -757,13 +760,16 @@ void K_Add_Boundry_Right(float k, int startX, int startY, int endY)
     for (i = startY; i >= endY; i--)
     {
         r_border_fill[i] = (int)((i - startY) / k + startX);//(y-y1)=k(x-x1)变形，x=(y-y1)/k+x1
+        r_border_repair[i] = (int)((i - startY) / k + startX);//(y-y1)=k(x-x1)变形，x=(y-y1)/k+x1
         if (r_border_fill[i] >= MT9V03X_W - 1)
         {
             r_border_fill[i] = MT9V03X_W - 1;
+            r_border_repair[i] = MT9V03X_W - 1;
         }
         else if (r_border_fill[i] <= 0)
         {
             r_border_fill[i] = 0;
+            r_border_repair[i] = 0;
         }
     }
 }

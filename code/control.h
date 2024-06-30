@@ -18,9 +18,9 @@ extern int center_speed;//小车车身左右编码加权实际速度
 extern int left_encoder, right_encoder;//左右编码器读数
 extern int left_speed, right_speed;//左右轮差速目标速度
 extern int Target_Speed_l, Target_Speed_r;//左右轮实际速度
-extern int speed_ratio ;//差速系数
+extern float speed_ratio ;//差速系数
 extern float duty_ratio;//电机增量误差系数
-extern int duty;//电机差速增量
+extern float duty;//电机差速增量
 
 
 
@@ -32,6 +32,7 @@ extern float straight_dis;//现实实际距离映射
 
 
 //电机驱动相关信息
-void motor_driver(int speed_l,int speed_r);//电机驱动函数
+void l_motor_driver(int speed_l);//电机驱动函数
+void r_motor_driver(int speed_r);//电机驱动函数
 
 #endif /* CODE_CONTROL_H_ */

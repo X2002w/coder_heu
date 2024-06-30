@@ -55,6 +55,9 @@ extern int ramp_flag;//坡道标志位
 //十字
 extern int cross_flag;//十字标志位
 
+//直道
+extern int straight_flag;//直道标志位
+
 //斑马线
 extern int zebra_line_flag;//斑马线标志位
 
@@ -68,6 +71,7 @@ void Left_Add_Line(int x1, int y1, int x2, int y2);//左补线,补的是边界
 void Right_Add_Line(int x1, int y1, int x2, int y2);//右补线,补的是边界
 void Draw_Line(int startX, int startY, int endX, int endY);
 void center_repair(void);
+void straight_detect(void);
 void buzzer(void);
 void process(void);
 #endif /* CODE_IMAGE_H_ */
