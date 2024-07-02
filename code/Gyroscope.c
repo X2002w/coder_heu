@@ -70,9 +70,13 @@ void Get_Gyroscope_Pitch(void)
     FJ_Pitch = FJ_Pitch > 40 ? 40 : FJ_Pitch;
     FJ_Pitch = FJ_Pitch < (-40) ? (-40) : FJ_Pitch;
 
-    if(FJ_Pitch>=5&&ramp_flag==0)
+    if(FJ_Pitch>=5&&cross_flag==0&& Island_State==0 && zebra_line_flag==0)
     {//俯仰角变大认为是坡道，强行进1状态，但是注意，陀螺仪零飘会导致俯仰角自己在飘，会莫名其妙的进去坡道
-    //    ramp_flag=1;
+        ramp_flag=1;
+    }
+    else
+    {
+        ramp_flag = 0;
     }
 
 }

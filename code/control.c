@@ -11,20 +11,28 @@
 
 //小车速度相关信息
 int set_mode=1; //小车模式设置，给予不同速度
-int target_speed=340;//小车车身目标速度
+int target_speed1=340;//小车车身目标速度
+int target_speed2=0;//小车速度决策后的速度
+int yuzhi_speed=0;//小车阈值速度，用于棒棒控制
 int center_speed;//小车车身左右编码加权实际速度
 int left_encoder,right_encoder;//左右编码器读数
 int left_speed,right_speed;//左右轮差速目标速度
 int Target_Speed_l,Target_Speed_r;//左右轮实际速度
 float speed_ratio = 0.91;//差速系数
+
+/*0.91 390不错
+ * 0.84 变速不错，环岛不好，0.88环岛
+ *0.86 430不错
+ *
+ * */
 float duty_ratio=0;//0.12;
 float duty;//电机差速增量
 
 
 //速度策略相关,差速，不降速
-int straight_jia = 450;
-int island_jia = 320;;
-int ramp_jia = 0;
+int straight_jia = 150;
+int island_jia = 370;;
+int ramp_jia = 320;
 
 
 
@@ -52,25 +60,25 @@ void set_speed(void)
     //设置弯道速度为基础速度
 
     if (set_mode == 0)
-        target_speed = 320;
+        target_speed1 = 320;
     else if (set_mode == 1)
-        target_speed = 390;
+        target_speed1 = 390;
     else if (set_mode == 2)
-        target_speed = 410;
+        target_speed1 = 410;
     else if (set_mode == 3)
-        target_speed = 430;
+        target_speed1 = 430;
     else if (set_mode == 4)
-        target_speed = 450;
+        target_speed1 = 450;
     else if (set_mode == 5)
-        target_speed = 470;
+        target_speed1 = 470;
     else if (set_mode == 6)
-        target_speed = 490;
+        target_speed1 = 490;
     else if (set_mode == 7)
-        target_speed = 510;
+        target_speed1 = 510;
     else if (set_mode == 8)
-        target_speed = 530;
+        target_speed1 = 530;
     else if (set_mode == 9)
-        target_speed = 560;
+        target_speed1 = 560;
 
     for (y= MT9V03X_H-1;y>=0;y--)
     {
@@ -125,37 +133,41 @@ Coefficients (with 95% confidence bounds):
         //长直道速度
         if (straight_flag==1 && Island_State==0&&ramp_flag==0&& zebra_line_flag==0)
         {
-           // target_speed = straight_jia;
+           yuzhi_speed=target_speed1-100;
+           target_speed2=target_speed1 + straight_jia;
         }
         //环岛速度
         else if (straight_flag==0&& Island_State&& ramp_flag == 0 && zebra_line_flag == 0)
         {
-           // target_speed = island_jia;
+            yuzhi_speed=island_jia;
+            target_speed2 = island_jia;
         }
         //坡道速度
         else if (straight_flag == 0 && Island_State==0 && ramp_flag && zebra_line_flag == 0)
         {
-            target_speed = ramp_jia;
+            yuzhi_speed=ramp_jia;
+            target_speed2 = ramp_jia;
         }
         //出界，斑马线速度
         else if ((straight_flag == 0 && Island_State == 0 && ramp_flag==0 && zebra_line_flag)|| chujie_flag == 1)
         {
-            target_speed = 0;
+            target_speed2 = 0;
         }
         //其他情况，速度映射
         else
         {
-            /*         f(x) = a*x*x+b
+            /* General model:
+     f(x) = a*x*x+b
 Coefficients (with 95% confidence bounds):
-       a =    0.007708  (0.006841, 0.008575)
-       b =       322.5  (310.4, 334.6)
+       a =    0.002706  (0.002484, 0.002929)
+       b =       397.1  (391, 403.3)
          * */
           //  5:8
-          //target_speed= 0.007708 *straight_dis*straight_dis+ 372.5;
+         // target_speed= 0.002706 *straight_dis*straight_dis+ 391;
+            target_speed2=target_speed1;
         }
 
-    if(chujie_flag==1||zebra_line_flag>=2)
-        target_speed=0;
+
 }
 //差速
 void speed_contral(void)
@@ -187,21 +199,21 @@ void speed_contral(void)
    if (duty > 0) {
         //左转
         if (abs(duty_ratio * duty) < 35)//右加速限幅，防止侧翻
-            right_speed = target_speed + duty_ratio * duty;
+            right_speed = target_speed2 + duty_ratio * duty;
         else
-            right_speed = target_speed + 35;
+            right_speed = target_speed2 + 35;
 
 
       //  left_speed = (int)(target_speed * (1 - ((float)duty_ratio / 1200) * tan(5.137 * (float)duty / 4.0f * 3.14 / 1673) / 0.885));
-        left_speed = target_speed - duty;
+        left_speed = target_speed2 - duty;
     }
     else {
         //右转
         if (abs(duty_ratio * duty) < 35)//左加速限幅，防止侧翻
-            left_speed = target_speed - duty_ratio * duty;//左加速
+            left_speed = target_speed2 - duty_ratio * duty;//左加速
         else
-            left_speed = target_speed + 35;//左加速
-        right_speed = target_speed + duty;//右减速
+            left_speed = target_speed2 + 35;//左加速
+        right_speed = target_speed2 + duty;//右减速
     }
 
    //环岛差速
@@ -209,22 +221,22 @@ void speed_contral(void)
     {
         if (Island_State == 4)
         {
-            duty_ratio = 0.32;//外轮是否加速
+            duty_ratio = 0.05;//外轮是否加速
             if (duty > 0) {
                 //左转
-                if (abs(duty_ratio * duty) < 80)//右加速限幅，防止侧翻
-                    right_speed = target_speed + duty_ratio * duty;
+                if (abs(duty_ratio * duty) < 35)//右加速限幅，防止侧翻
+                    right_speed = target_speed2 + duty_ratio * duty;
                 else
-                    right_speed = target_speed + 80;
-                left_speed = target_speed - duty;
+                    right_speed = target_speed2 + 35;
+                left_speed = target_speed2 - duty;
             }
             else {
                 //右转
-                if (abs(duty_ratio * duty) < 80)//左加速限幅，防止侧翻
-                    left_speed = target_speed - duty_ratio * duty;//左加速
+                if (abs(duty_ratio * duty) < 35)//左加速限幅，防止侧翻
+                    left_speed = target_speed2 - duty_ratio * duty;//左加速
                 else
-                    left_speed = target_speed + 80;//左加速
-                right_speed = target_speed +  duty;//右减速
+                    left_speed = target_speed2 + 35;//左加速
+                right_speed = target_speed2 +  duty;//右减速
             }
         }
         else if(Island_State==3|| Island_State==5|| Island_State==6|| Island_State==7|| Island_State==8)
@@ -317,6 +329,10 @@ void speed_contral(void)
 
 
 
+/*
+ * 8701驱动程序
+ * */
+
 void l_motor_driver(int speed_l)//电机驱动函数
 {
       if(speed_l>=0)//左
@@ -351,5 +367,9 @@ void r_motor_driver(int speed_r)//电机驱动函数
             }
 
     }
+
+
+
+
 
 

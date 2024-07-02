@@ -24,7 +24,7 @@ int right_up_point[2];
   Sample     Island_Detect(void);
   @note      利用四个拐点判别函数，单调性改变函，连续性数撕裂点，分为8步
 -------------------------------------------------------------------------------------------------------------------*/
-void Island_Detect()
+void Island_Detect(void)
 {
     static float k = 0;//3和5状态的k
     static int island_state_5_down[2] = { 0 };//状态5时即将离开环岛，左右边界边最低点，[0]存y，第某行，{1}存x，第某列

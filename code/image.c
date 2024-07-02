@@ -403,20 +403,23 @@ float Err_Sum(void)
     //根据速度给予误差行，使用13行（17——100cm）以下控制
     //weight_num给予13-27
     center_speed = (left_encoder + right_encoder) / 2;
-    if (center_speed >= 460)
-        weight_num = 13;
-    else if (center_speed < 460 && center_speed >= 430)
-        weight_num = 15;
-    else if (center_speed < 430 && center_speed >= 410)
-        weight_num = 17;
-    else if (center_speed < 410 && center_speed >= 380)
-        weight_num = 20;
-    else if (center_speed < 380 && center_speed >= 360)
-        weight_num = 22;
-    else if (center_speed < 360 && center_speed >= 340)
-        weight_num = 25;
-    else
-        weight_num = 27;
+
+    if(center_speed<340)
+        weight_num=25;
+    else if(center_speed<360)
+        weight_num=24;
+    else if(center_speed<380)
+        weight_num=22;
+    else if(center_speed<400)
+        weight_num=20;
+    else if(center_speed<420)
+        weight_num=18;
+    else if(center_speed<440)
+        weight_num=16;
+    else if(center_speed<460)
+        weight_num=15;
+    else if(center_speed<470)
+        weight_num=13;
 
 
     for (i = weight_num; i < weight_num + 24; i++)
@@ -1060,7 +1063,7 @@ void center_repair(void){
 
 void straight_detect(void) 
 {
-    if (straight_flag == 0 && straight_dis > 200 && hightest<40)
+    if (ramp_flag == 0 &&Island_State==0&& cross_flag==0&& straight_dis > 150 && hightest>35)
     {
         straight_flag = 1;
     }
@@ -1140,16 +1143,12 @@ void process(void)
     Threshold=my_adapt_threshold(mt9v03x_image[0],MT9V03X_W, MT9V03X_H);
     Image_Binarization(Threshold);//图像二值化
     Longest_White_Column();
+    center_repair();
     Cross_Detect();
-    //Island_Detect();
+    Island_Detect();
     straight_detect();
 //显示用
-    for(y=0;y<MT9V03X_H;y++){
-        center_line[y]=(r_border_fill[y]+l_border_fill[y])/2;
-        center_line_repair[y]= (r_border_repair[y] + l_border_repair[y]) / 2;
-    }
-
-    center_repair();
+    
     for(y=0;y<MT9V03X_H;y++){
         center_line[y]=(r_border_fill[y]+l_border_fill[y])/2;
         center_line_repair[y] = (r_border_repair[y] + l_border_repair[y]) / 2;

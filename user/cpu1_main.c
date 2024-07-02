@@ -59,6 +59,7 @@ void core1_main(void)
     Zero_Point_Detect();
   //  while (dl1a_init());//²â¾à
 
+  //  ips200_init(IPS200_TYPE_SPI);
     ips200_init(IPS200_TYPE_PARALLEL8);
     pwm_init(ATOM0_CH1_P33_9,300,4700 );
     pwm_init(ATOM0_CH5_P02_5, 17000, 2500);//you

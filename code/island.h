@@ -31,6 +31,6 @@ void K_Draw_Line(float k, int startX, int startY, int endY);
 float Get_Left_K(int start_line, int end_line);
 float Get_Right_K(int start_line, int end_line);
 
-
+void Island_Detect(void);
 
 #endif /* CODE_ISLAND_H_ */
