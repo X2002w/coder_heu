@@ -86,6 +86,12 @@ volatile int Left_Up_Find = 0;   //四个拐点标志
 volatile int Right_Down_Find = 0;
 volatile int Right_Up_Find = 0;
 
+
+//刹车
+int jisha_flag;//急刹标志位
+//加速
+int jiasu_flag;//加速标志位
+
 //坡道
 int ramp_flag=0;//坡道标志位
 
@@ -403,20 +409,20 @@ float Err_Sum(void)
     //根据速度给予误差行，使用13行（17——100cm）以下控制
     //weight_num给予13-27
     center_speed = (left_encoder + right_encoder) / 2;
-    if (center_speed >= 460)
+    if (center_speed >= 440)
         weight_num = 13;
-    else if (center_speed < 460 && center_speed >= 430)
+    else if (center_speed < 440 && center_speed >= 420)
         weight_num = 15;
-    else if (center_speed < 430 && center_speed >= 410)
+    else if (center_speed < 420 && center_speed >= 400)
         weight_num = 17;
-    else if (center_speed < 410 && center_speed >= 380)
+    else if (center_speed < 400 && center_speed >= 380)
         weight_num = 20;
     else if (center_speed < 380 && center_speed >= 360)
         weight_num = 22;
     else if (center_speed < 360 && center_speed >= 340)
-        weight_num = 25;
+        weight_num = 24;
     else
-        weight_num = 27;
+        weight_num = 25;
 
 
     for (i = weight_num; i < weight_num + 24; i++)
@@ -437,7 +443,7 @@ float Err_Sum(void)
 
 
 
-    else 
+    else
     {
             for (i = MT9V03X_H - 1; i >= MT9V03X_H - hightest - 1; i--)//常规误差计算
             {
@@ -859,24 +865,27 @@ void Find_Up_Point(int start, int end)
     for (i = start; i >= end; i--)
     {
         if (Left_Up_Find == 0 &&//只找第一个符合条件的点
-            abs(l_border[i] - l_border[i - 1]) <= 2 &&
-            abs(l_border[i - 1] - l_border[i - 2]) <= 3 &&
-            abs(l_border[i - 2] - l_border[i - 3]) <= 5 &&
-            (l_border[i] - l_border[i + 2]) >= 7 &&
-            (l_border[i] - l_border[i + 3]) >= 8 &&
-            (l_border[i] - l_border[i + 4]) >= 9)
+            (l_border[i] - l_border[i - 1]) >= -2 &&
+            (l_border[i] - l_border[i - 2]) >= -3 &&
+            (l_border[i] - l_border[i - 3]) >= -5 &&
+            (l_border[i] - l_border[i + 2]) >= 5 &&
+            (l_border[i] - l_border[i + 3]) >= 9 &&
+            (l_border[i] - l_border[i + 4]) >= 10)
         {
             Left_Up_Find = i;//获取行数即可
+         // ips200_draw_hollow_circle(r_border[Right_Up_Find],Right_Up_Find,5,1,RGB565_PURPLE);
+            //ips200_draw_hollow_circle(l_border[Left_Up_Find],Left_Up_Find,5,1,RGB565_PURPLE);
         }
         if (Right_Up_Find == 0 &&//只找第一个符合条件的点
-            abs(r_border[i] - r_border[i - 1]) <= 2 &&//下面两行位置差不多
-            abs(r_border[i - 1] - r_border[i - 2]) <= 3 &&
-            abs(r_border[i - 2] - r_border[i - 3]) <= 5 &&
-            (r_border[i] - r_border[i + 2]) <= -7 &&
-            (r_border[i] - r_border[i + 3]) <= -8 &&
-            (r_border[i] - r_border[i + 4]) <= -9)
+            (r_border[i] - r_border[i - 1]) <= 2 &&//下面两行位置差不多
+            (r_border[i] - r_border[i - 2]) <= 3 &&
+            (r_border[i] - r_border[i - 3]) <= 5 &&
+            (r_border[i] - r_border[i + 1]) <=-5 &&
+            (r_border[i] - r_border[i + 3]) <=-9 &&
+            (r_border[i] - r_border[i + 4]) <=-10)
         {
             Right_Up_Find = i;//获取行数即可
+           // ips200_draw_hollow_circle(r_border[Right_Up_Find],Right_Up_Find,5,1,RGB565_PURPLE);
         }
         if (Left_Up_Find != 0 && Right_Up_Find != 0)//下面两个找到就出去
         {
@@ -888,6 +897,7 @@ void Find_Up_Point(int start, int end)
         Right_Up_Find = 0;
         Left_Up_Find = 0;
     }
+
 }
 
 
@@ -917,9 +927,12 @@ void Cross_Detect()
         }
         if (Left_Up_Find != 0 && Right_Up_Find != 0)//找到两个上点，就找到十字了
         {
+           // ips200_draw_hollow_circle(r_border[Right_Up_Find],Right_Up_Find,5,1,RGB565_PURPLE);
+           // ips200_draw_hollow_circle(l_border[Left_Up_Find],Left_Up_Find,5,1,RGB565_PURPLE);
             cross_flag = 1;//对应标志位，便于各元素互斥掉
             down_search_start = Left_Up_Find > Right_Up_Find ? Left_Up_Find : Right_Up_Find;//用两个上拐点坐标靠下者作为下点的搜索上限
             Find_Down_Point(MT9V03X_H - 5, down_search_start + 2);//在上拐点下2行作为下点的截止行
+
             if (Left_Down_Find <= Left_Up_Find)
             {
                 Left_Down_Find = 0;//下点不可能比上点还靠上
@@ -928,6 +941,8 @@ void Cross_Detect()
             {
                 Right_Down_Find = 0;//下点不可能比上点还靠上
             }
+           // ips200_draw_hollow_circle(r_border[Right_Down_Find],Right_Down_Find,5,1,RGB565_PURPLE);
+           // ips200_draw_hollow_circle(l_border[Left_Down_Find],Left_Down_Find,5,1,RGB565_PURPLE);
             if (Left_Down_Find != 0 && Right_Down_Find != 0)
             {//四个点都在，无脑连线，这种情况显然很少
                 Left_Add_Line(l_border[Left_Up_Find], Left_Up_Find, l_border[Left_Down_Find], Left_Down_Find);
@@ -954,13 +969,7 @@ void Cross_Detect()
             cross_flag = 0;
         }
     }
-    //角点相关变量，debug使用
-    //ips200_showuint8(0,12,Cross_Flag);
-//    ips200_showuint8(0,13,Island_State);
-//    ips200_showuint8(50,12,Left_Up_Find);
-//    ips200_showuint8(100,12,Right_Up_Find);
-//    ips200_showuint8(50,13,Left_Down_Find);
-//    ips200_showuint8(100,13,Right_Down_Find);
+
 }
 
 
@@ -974,7 +983,8 @@ void center_repair(void){
 //对于丢线，查找未丢线边界的变化趋势，映射到丢线区域,
 //直接检查双边丢线情况
 
-
+if(cross_flag==0 && ramp_flag==0 && (Island_State==0||Island_State==4))
+{
     for (y = MT9V03X_H - 1; y > MT9V03X_H - hightest; y--)
     {
         //遍历过的必定为正确的边界
@@ -986,7 +996,7 @@ void center_repair(void){
         else if (l_lost_flag[y + 1] == 1 && r_lost_flag[y + 1] == 0)
             l_border_repair[y - 1] = l_border_repair[y] - abs(r_border[y - 1] - r_border[y]);
     }
-
+}
     //环岛中线修复
     if(Island_State&&cross_flag==0 && ramp_flag==0)
     {
@@ -1060,7 +1070,7 @@ void center_repair(void){
 
 void straight_detect(void) 
 {
-    if (straight_flag == 0 && straight_dis > 200 && hightest<40)
+    if (Island_State==0 &&ramp_flag==0&& straight_dis > 150)
     {
         straight_flag = 1;
     }
@@ -1092,7 +1102,7 @@ void Zebra_detect(void)
        zebra_line_flag+=1;
        if(zebra_line_flag>30)
        {
-       //zebra_line_flag=0;
+       zebra_line_flag=1;
        }
    }
 
@@ -1140,16 +1150,13 @@ void process(void)
     Threshold=my_adapt_threshold(mt9v03x_image[0],MT9V03X_W, MT9V03X_H);
     Image_Binarization(Threshold);//图像二值化
     Longest_White_Column();
+    center_repair();
     Cross_Detect();
-    //Island_Detect();
+    Island_Detect();
     straight_detect();
 //显示用
-    for(y=0;y<MT9V03X_H;y++){
-        center_line[y]=(r_border_fill[y]+l_border_fill[y])/2;
-        center_line_repair[y]= (r_border_repair[y] + l_border_repair[y]) / 2;
-    }
 
-    center_repair();
+   // center_repair();
     for(y=0;y<MT9V03X_H;y++){
         center_line[y]=(r_border_fill[y]+l_border_fill[y])/2;
         center_line_repair[y] = (r_border_repair[y] + l_border_repair[y]) / 2;

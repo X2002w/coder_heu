@@ -59,12 +59,12 @@ void core1_main(void)
     Zero_Point_Detect();
   //  while (dl1a_init());//²â¾à
 
-    ips200_init(IPS200_TYPE_PARALLEL8);
+   ips200_init(IPS200_TYPE_PARALLEL8);
     pwm_init(ATOM0_CH1_P33_9,300,4700 );
-    pwm_init(ATOM0_CH5_P02_5, 17000, 2500);//you
-    pwm_init(ATOM0_CH7_P02_7, 17000, 2500);//zuo
+    pwm_init(ATOM0_CH5_P02_5, 17000, 0);//you
+    pwm_init(ATOM0_CH7_P02_7, 17000, 0);//zuo
 
-    gpio_init(P02_4, GPO, 0, GPO_PUSH_PULL);//you
+    gpio_init(P02_4, GPO, 1, GPO_PUSH_PULL);//you
     gpio_init(P02_6, GPO, 0, GPO_PUSH_PULL);//zuo
     gpio_init(P33_10, GPO, 0, GPO_PUSH_PULL);
 

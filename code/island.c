@@ -96,30 +96,7 @@ void Island_Detect()
             }
         }
     }
-    //    ips200_show_int(0,7*16,continuity_change_left_flag,2);
-    //    ips200_show_int(0,8*16,continuity_change_right_flag,2);
-    //    ips200_show_int(0,9*16,Left_Lost_Time,2);
-    //    ips200_show_int(0,10*16,Right_Lost_Time,2);
-    //    ips200_show_int(0,11*16,Search_Stop_Line,2);
-    //    ips200_show_int(0,12*16,Boundry_Start_Left,2);
 
-    //    //电磁符合强跳3状态，默认注释掉
-        // if(Cross_Flag==0&&(Island_State==0||Island_State==2||Island_State==1)&&Zebra_State==0&&Ramp_Flag==0)
-        // {
-        //     if(ADC_Nor_Value[2]>=65)//中心电感值大
-        //     {
-        //         if (continuity_change_left_flag==0&&Right_Lost_Time>=20&&Both_Lost_Time<5&&Boundry_Start_Left>MT9V03X_H-10)
-        //         {//左边连续，左边起始点，左丢线少，双边丢线少，右边丢线多直接右环岛三状态
-        //             Right_Island_Flag=1;
-        //             Island_State=3;
-        //         }
-        //         else if(continuity_change_right_flag==0&&Left_Lost_Time>=20&&Both_Lost_Time<5&&Boundry_Start_Right>MT9V03X_H-10)
-        //         {
-        //             Left_Island_Flag=1;
-        //             Island_State=3;
-        //         }
-        //     }
-        // }
 
     if (Left_Island_Flag == 1)//1状态下拐点还在，没丢线
     {
@@ -131,7 +108,7 @@ void Island_Detect()
 
 
 
-            if ((Island_State == 1) && (l_start < 30))//下方当丢线时候进2
+            if ((Island_State == 1) && (l_start < 40))//下方当丢线时候进2
             {
                 Island_State = 2;
             }
@@ -143,7 +120,7 @@ void Island_Detect()
             monotonicity_change_line[0] = Monotonicity_Change_Left(70, 10);//寻找单调性改变点
             monotonicity_change_line[1] = l_border[monotonicity_change_line[0]];
             Left_Add_Line((int)(monotonicity_change_line[1] * 0.1), MT9V03X_H - 1, monotonicity_change_line[1], monotonicity_change_line[0]);
-            if (Island_State == 2 && (l_start >= MT9V03X_H - 3 || monotonicity_change_line[0] > 50))//当圆弧靠下时候，进3
+            if (Island_State == 2 && (l_start >= MT9V03X_H - 6 || monotonicity_change_line[0] > 50))//当圆弧靠下时候，进3
             {
                 Island_State = 3;//最长白列寻找范围也要改，见camera.c
                 Left_Island_Flag = 1;

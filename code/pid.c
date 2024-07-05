@@ -6,11 +6,11 @@
  */
 #include "zf_common_headfile.h"
 //电机pid参数
-float l_motor_kp=17;
+float l_motor_kp=17;//17,3.2  17,401
 float l_motor_ki=3.2;
 float l_motor_kd=0;
 
-float r_motor_kp=23;
+float r_motor_kp=20;//23,3.4     16,4.19
 float r_motor_ki=3.4;
 float r_motor_kd=0;
 
@@ -18,25 +18,25 @@ float r_motor_kd=0;
 //舵机pid参数
 float servo_kp=7.5;
 float servo_ki=0;
-float servo_kd=0;
+float servo_kd=6.5;
 float servo_kp1=0;
 
 int pid_servo(float Err)
 {
     int duty;
-    float err,l_err;
+    float err=0,l_err=0;
     err=Err;
 
 
     //二次项动态kp
-   // servo_kp1=err*err/740+servo_kp;
+   // servo_kp1=err*err/940+5.56;
     //指数动态kp
     //servo_kp1=(double)(abs((exp(-abs(err))-1)/(exp(-abs(err))+1))/2+servo_kp)*1.06;
 
-    if(servo_kp1>=11.5)
-        servo_kp1=11.5;
-    servo_kd=servo_kp*0.11;
-    duty=servo_kp*err+0.0015*err*abs(err)+servo_kd*(err-l_err)-imu660ra_gyro_z*0.03;
+    if(servo_kp1>=8.5)
+        servo_kp1=8.5;
+    servo_kd=servo_kp*0.13;
+    duty=servo_kp*err+0.0015*err*abs(err)+servo_kd*(err-l_err)-imu660ra_gyro_z*0.03;//左正右负
    // printf("%d,%d,%d\n",imu660ra_gyro_x,imu660ra_gyro_y,imu660ra_gyro_z);
     // duty=-imu660ra_gyro_z*0.12;
     l_err=err;
@@ -55,11 +55,45 @@ int pid_servo(float Err)
 
 int pid_l_motor(int actual_speed,int set_speed)
 {
-    volatile static int duty,l_err;
-    volatile static int err;
+    volatile static int duty,l_err=0;
+    volatile static int err=0;
+
+
     err=set_speed-actual_speed;
-    duty+=(int)(l_motor_kp*(err-l_err)+l_motor_ki*err);
+   duty+=(int)(l_motor_kp*(err-l_err)+l_motor_ki*err-abs(imu660ra_gyro_z)*0);
+    //duty=(int)(l_motor_kd*(err-l_err)+l_motor_kp*err);
     l_err=err;
+
+/*
+if(jiasu_flag)
+{
+if(err>50)
+    duty+=2000;
+else if(err>60)
+    duty+=3000;
+else if(err>70)
+    duty+=4000;
+else if(err>80)
+    duty+=5000;
+else if(err>90)
+    duty+=6000;
+}
+if(jisha_flag)
+{
+
+    if(err<-10)
+        duty-=2000;
+    else if(err<=-20)
+        duty-=3000;
+    else if(err<=-40)
+        duty-=4000;
+    else if(err<=-60)
+        duty-=6000;
+    else if(err<=-70)
+        duty-=7000;
+}
+*/
+
 
     if(duty>=8000)
         duty=8000;
@@ -72,10 +106,13 @@ int pid_l_motor(int actual_speed,int set_speed)
 
 int pid_r_motor(int actual_speed,int set_speed)
 {
-    volatile  static int duty,l_err;
-    volatile  static int err;
+    volatile  static int duty,l_err=0;
+    volatile  static int err=0;
     err=set_speed-actual_speed;
-    duty+=(int)(r_motor_kp*(err-l_err)+r_motor_ki*err);
+
+
+    duty+=(int)(r_motor_kp*(err-l_err)+r_motor_ki*err-abs(imu660ra_gyro_z)*0);
+  //  duty=(int)(r_motor_kd*(err-l_err)+r_motor_kp*err);
     l_err=err;
 
 

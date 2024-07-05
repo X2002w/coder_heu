@@ -24,23 +24,37 @@ void ips200(void)
                ips200_draw_point(x_limited(center_line[i]+2),i, RGB565_GREEN);
 
 
-
-               ips200_draw_point(x_limited(r_border_fill[i]), i,RGB565_RED);//显示起点 显示右边
-               ips200_draw_point(x_limited(r_border_fill[i]+1), i,RGB565_RED);
-               ips200_draw_point(x_limited(r_border_fill[i]+2), i,RGB565_RED);
-
-
-                ips200_draw_point(x_limited(l_border_fill[i]), i, RGB565_BLUE);//显示起点 显示左边线
-                ips200_draw_point(x_limited(l_border_fill[i]+1), i, RGB565_BLUE);
-                ips200_draw_point(x_limited(l_border_fill[i]+2), i, RGB565_BLUE);
+               ips200_draw_point(x_limited(r_border_fill[i]), i,RGB565_BLUE);//显示起点 显示右边
+               ips200_draw_point(x_limited(r_border_fill[i]+1), i,RGB565_BLUE);
+               ips200_draw_point(x_limited(r_border_fill[i]+2), i,RGB565_BLUE);
 
 
+               ips200_draw_point(x_limited(l_border_fill[i]), i, RGB565_RED);//显示起点 显示左边线
+               ips200_draw_point(x_limited(l_border_fill[i]+1), i, RGB565_RED);
+               ips200_draw_point(x_limited(l_border_fill[i]+2), i, RGB565_RED);
 
+/*
+               ips200_draw_point(x_limited(r_border_repair[i]), i,RGB565_RED);//显示起点 显示右边
+               ips200_draw_point(x_limited(r_border_repair[i]+1), i,RGB565_RED);
+               ips200_draw_point(x_limited(r_border_repair[i]+2), i,RGB565_RED);
 
+                ips200_draw_point(x_limited(l_border_repair[i]), i, RGB565_BLUE);//显示起点 显示左边线
+                ips200_draw_point(x_limited(l_border_repair[i]+1), i, RGB565_BLUE);
+                ips200_draw_point(x_limited(l_border_repair[i]+2), i, RGB565_BLUE);
+*/
 
                 ips200_draw_point(x_limited(center_line_repair[i]),i, RGB565_CYAN);//显示起点 显示中线
-                       ips200_draw_point(x_limited(center_line_repair[i]+1),i, RGB565_CYAN);
-                       ips200_draw_point(x_limited(center_line_repair[i]+2),i, RGB565_CYAN);
+                ips200_draw_point(x_limited(center_line_repair[i]+1),i, RGB565_CYAN);
+                ips200_draw_point(x_limited(center_line_repair[i]+2),i, RGB565_CYAN);
+
+
+                ips200_draw_point(x_limited(right_map[i]),i, RGB565_PURPLE);
+                ips200_draw_point(x_limited(right_map[i]+1),i, RGB565_PURPLE);
+                ips200_draw_point(x_limited(right_map[i]+2),i, RGB565_PURPLE);
+
+                ips200_draw_point(x_limited(left_map[i]),i, RGB565_PURPLE);
+                ips200_draw_point(x_limited(left_map[i]+1),i, RGB565_PURPLE);
+                ips200_draw_point(x_limited(left_map[i]+2),i, RGB565_PURPLE);
 
 /*
 

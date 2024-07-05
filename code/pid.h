@@ -21,6 +21,9 @@ extern float r_motor_kp;
 extern float r_motor_ki;
 extern float r_motor_kd;
 
+extern float servo_kp;
+extern float servo_kd;
+
 
 int pid_servo(float Err);
 int pid_l_motor(int actual_speed,int set_speed);

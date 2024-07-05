@@ -49,6 +49,14 @@ extern int Right_Island_Flag;//右环岛标志
 extern float err;//摄像头误差
 extern int angle;
 
+
+//刹车
+extern int jisha_flag;//急刹标志位
+//加速
+extern int jiasu_flag;//加速标志位
+
+
+
 //坡道
 extern int ramp_flag;//坡道标志位
 

@@ -56,14 +56,14 @@ int core0_main(void)
     //100,8
 //90,10
     //80,18
-    //75,20
+    //75,20.
     //70,22   65,23   60,26      55.5,28
     //50,31   45.5,34    40,38 35.5,42
     //25.5,53    ,25.7,50    30,46
     //19,69
 
-int i;
-
+  int i;
+ // ips200_init(IPS200_TYPE_PARALLEL8);
     // 此处编写用户代码 例如外设初始化代码等
     cpu_wait_event_ready();         // 等待所有核心初始化完毕
     while (TRUE)
@@ -72,7 +72,8 @@ int i;
         if(mt9v03x_finish_flag)
         {
             process();
-
+//ips200();
+//interface_display();
          /*   for(i=0;i<MT9V03X_H;i++){
                 printf("%d  %d   %d\n",i,r_border[i],l_border[i]);
             }

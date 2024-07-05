@@ -62,16 +62,16 @@ void dispage1(void) //第2面参数显示
     ips200_show_string(1,190, "r_ki:");//基础kp
     ips200_show_string(1,210, "speed_ratio:");//二次项参数
     ips200_show_string(1,230, "set_mode:");//指数项参数
-    ips200_show_string(1,250, "string:");//动态kd参数
-    ips200_show_string(1,270, "string:");//陀螺仪加速度参数
+    ips200_show_string(1,250, "target_speed:");//动态kd参数
+    ips200_show_string(1,270, "duty_ratio:");//陀螺仪加速度参数
 
 }
 void dispage2(void) //第3面参数显示
 {
 
     //电机,差速调节
-        ips200_show_string(1,130, "string:");
-        ips200_show_string(1,150, "string:");
+        ips200_show_string(1,130, "servo_kp:");
+        ips200_show_string(1,150, "servo_kd:");
         ips200_show_string(1,170, "string:");//差速弯道系数
 
         ips200_show_string(1,190, "string:");//差速误差系数
@@ -104,8 +104,8 @@ void number1(void)
     ips200_show_float(160, 190, r_motor_ki, 3, 2);
     ips200_show_float(160, 210, speed_ratio, 3, 2);
     ips200_show_float(160, 230, set_mode, 3, 2);
-    ips200_show_float(160, 250, 0, 3, 2);
-    ips200_show_float(160, 270, 0, 3, 2);
+    ips200_show_float(160, 250, target_speed, 3, 2);
+    ips200_show_float(160, 270, duty_ratio, 3, 2);
 
 
 
@@ -116,8 +116,8 @@ void number1(void)
 
 void number2(void)
 {
-    ips200_show_float(160, 130, 0, 3, 2);
-       ips200_show_float(160, 150, 0, 3, 2);
+    ips200_show_float(160, 130, servo_kp, 3, 2);
+       ips200_show_float(160, 150, servo_kd, 3, 2);
        ips200_show_float(160, 170, 0, 3, 1);
        ips200_show_float(160, 190, 0, 2, 3);
        ips200_show_float(160, 210, 0, 3, 1);
@@ -261,8 +261,8 @@ void interface_display(void)
           ips200_show_string(1,230, "zebra_line_flag:");
           ips200_show_float(160, 230, zebra_line_flag, 3, 1);
 
-          ips200_show_string(1,250, "target_speed:");
-          ips200_show_float(160, 250, target_speed, 3, 1);
+          ips200_show_string(1,250, "target_speed1:");
+          ips200_show_float(160, 250, target_speed1, 3, 1);
 
 
           ips200_show_string(1,270, "chujie_flag:");
@@ -276,11 +276,11 @@ void interface_display(void)
               ips200_show_gray_image(0,0,bin_image[0], MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H,0);
 
               //环岛系列参数
-                       ips200_show_string(1,130, "string:");
-                       ips200_show_float(160, 130, 0, 3, 2);
+                       ips200_show_string(1,130, "hightest:");
+                       ips200_show_float(160, 130, hightest, 3, 2);
 
-                       ips200_show_string(1,150, "string:");
-                       ips200_show_float(160, 150, 0, 3, 1);
+                       ips200_show_string(1,150, "cross_flag:");
+                       ips200_show_float(160, 150, cross_flag, 3, 1);
 
                        ips200_show_string(1,170, "string:");
                        ips200_show_float(160, 170, 0, 3, 1);
@@ -375,16 +375,20 @@ void  key1_function(void)
             set_mode+=1;
         }
         else if(paraadjnum==6) {
-
+            target_speed+=20;
         }
         else if(paraadjnum==7) {
+            duty_ratio+=0.1;
         }
 
     }
     else  if(dispagenum==3){ //参数显示
        if(paraadjnum==0){
+
+           servo_kp+=0.4;
        }
        else  if(paraadjnum==1){
+           servo_kd+=0.4;
        }
        else if(paraadjnum==2) {
 
@@ -467,20 +471,20 @@ void  key1_function(void)
           }
           else if(paraadjnum==6) {
 
-
+              target_speed-=20;
           }
           else if(paraadjnum==7) {
-
+              duty_ratio-=0.1;
           }
 
       }
       else  if(dispagenum==3){ //参数显示
          if(paraadjnum==0){
 
-
+             servo_kp-=0.4;
          }
          else  if(paraadjnum==1){
-
+             servo_kd-=0.4;
          }
          else if(paraadjnum==2) {
 
@@ -658,7 +662,8 @@ void sending(void)
     tempFloat[0]=err;
     tempFloat[1]=left_encoder;
     tempFloat[2]=right_encoder;
-
+    tempFloat[3]=Target_Speed_l;
+    tempFloat[4]=Target_Speed_r;
   memcpy(tempData, (uint8 *)tempFloat, sizeof(tempFloat));
 
     tempData[48] = 0x00;
