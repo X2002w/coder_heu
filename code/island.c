@@ -50,7 +50,7 @@ void Island_Detect()
             if (monotonicity_change_right_flag == 0 && //右边是单调的
                 continuity_change_left_flag != 0 && //左边是不连续的
                 continuity_change_right_flag == 0 && //左环岛右边是连续的
-                l_lost_num >= 10 && //左边丢线很多
+                l_lost_num >= 25 && //左边丢线很多
                 l_lost_num <= 50 && //也不能全丢了
                 r_lost_num <= 10 &&//右边丢线较少
                 hightest >= MT9V03X_H * 0.95 && //搜索截止行看到很远
@@ -75,7 +75,7 @@ void Island_Detect()
             if (monotonicity_change_left_flag == 0 &&
                 continuity_change_left_flag == 0 && //右环岛左边是连续的
                 continuity_change_right_flag != 1 && //右边是不连续的
-                r_lost_num >= 10 &&           //右丢线多
+                r_lost_num >= 25 &&           //右丢线多
                 r_lost_num <= 50 &&           //右丢线不能太多
                 l_lost_num <= 10 &&            //左丢线少
                 hightest >= MT9V03X_H * 0.95 && //搜索截止行看到很远
@@ -96,30 +96,7 @@ void Island_Detect()
             }
         }
     }
-    //    ips200_show_int(0,7*16,continuity_change_left_flag,2);
-    //    ips200_show_int(0,8*16,continuity_change_right_flag,2);
-    //    ips200_show_int(0,9*16,Left_Lost_Time,2);
-    //    ips200_show_int(0,10*16,Right_Lost_Time,2);
-    //    ips200_show_int(0,11*16,Search_Stop_Line,2);
-    //    ips200_show_int(0,12*16,Boundry_Start_Left,2);
 
-    //    //电磁符合强跳3状态，默认注释掉
-        // if(Cross_Flag==0&&(Island_State==0||Island_State==2||Island_State==1)&&Zebra_State==0&&Ramp_Flag==0)
-        // {
-        //     if(ADC_Nor_Value[2]>=65)//中心电感值大
-        //     {
-        //         if (continuity_change_left_flag==0&&Right_Lost_Time>=20&&Both_Lost_Time<5&&Boundry_Start_Left>MT9V03X_H-10)
-        //         {//左边连续，左边起始点，左丢线少，双边丢线少，右边丢线多直接右环岛三状态
-        //             Right_Island_Flag=1;
-        //             Island_State=3;
-        //         }
-        //         else if(continuity_change_right_flag==0&&Left_Lost_Time>=20&&Both_Lost_Time<5&&Boundry_Start_Right>MT9V03X_H-10)
-        //         {
-        //             Left_Island_Flag=1;
-        //             Island_State=3;
-        //         }
-        //     }
-        // }
 
     if (Left_Island_Flag == 1)//1状态下拐点还在，没丢线
     {
@@ -161,11 +138,11 @@ void Island_Detect()
                 left_up_point[0] = Find_Left_Up_Point(40, 5);//找左上拐点
                 left_up_point[1] = l_border[left_up_point[0]];
 
-               if (left_up_point[0] < 5)//此处为了防止误判，如果经常从3状态归零，建议修改此处判断条件
+          /*     if (left_up_point[0] < 5)//此处为了防止误判，如果经常从3状态归零，建议修改此处判断条件
                 {
                     Island_State = 0;
                     Left_Island_Flag = 0;
-                }
+                }*/
 
                 if (k == 0 && (15 <= left_up_point[0] && left_up_point[0] < 50) && (50 < left_up_point[1] && left_up_point[1] < 110))//拐点出现在一定范围内，认为是拐点出现
                 {
@@ -275,11 +252,11 @@ void Island_Detect()
                 right_up_point[0] = Find_Right_Up_Point(40, 10);//找右上拐点
                 right_up_point[1] = r_border[right_up_point[0]];
 
-                if (right_up_point[0] < 10)//这里改过，此处为了防止环岛误判，如果经常出现环岛3归零，请修改此处判断条件
+               /* if (right_up_point[0] < 5)//这里改过，此处为了防止环岛误判，如果经常出现环岛3归零，请修改此处判断条件
                 {
                     Island_State = 0;
                     Right_Island_Flag = 0;
-                }
+                }*/
 
                 if (k == 0 && (15 <= right_up_point[0] && right_up_point[0] < 50) && (70 < right_up_point[1] && right_up_point[1] < 150))//找第一个符合条件的角点，连线
                 {

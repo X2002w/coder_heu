@@ -14,6 +14,7 @@
  //小车速度相关信息
 extern int set_mode; //小车模式设置，给予不同速度
 extern int target_speed;//小车车身目标速度
+extern int target_speed1;
 extern int center_speed;//小车车身左右编码加权实际速度
 extern int left_encoder, right_encoder;//左右编码器读数
 extern int left_speed, right_speed;//左右轮差速目标速度

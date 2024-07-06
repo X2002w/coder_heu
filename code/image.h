@@ -58,6 +58,9 @@ extern int cross_flag;//十字标志位
 //直道
 extern int straight_flag;//直道标志位
 
+//弯道
+extern int corn_flag;//弯道标志位
+
 //斑马线
 extern int zebra_line_flag;//斑马线标志位
 

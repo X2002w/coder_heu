@@ -92,6 +92,9 @@ int ramp_flag=0;//坡道标志位
 //直道
 int straight_flag;//直道标志位
 
+//弯道
+int corn_flag;//弯道标志位
+
 //环岛
 
 
@@ -955,12 +958,7 @@ void Cross_Detect()
         }
     }
     //角点相关变量，debug使用
-    //ips200_showuint8(0,12,Cross_Flag);
-//    ips200_showuint8(0,13,Island_State);
-//    ips200_showuint8(50,12,Left_Up_Find);
-//    ips200_showuint8(100,12,Right_Up_Find);
-//    ips200_showuint8(50,13,Left_Down_Find);
-//    ips200_showuint8(100,13,Right_Down_Find);
+
 }
 
 
@@ -974,7 +972,7 @@ void center_repair(void){
 //对于丢线，查找未丢线边界的变化趋势，映射到丢线区域,
 //直接检查双边丢线情况
 
-
+if(cross_flag==0&& ramp_flag==0&& (Island_State==0||Island_State==4||Island_State==3))
     for (y = MT9V03X_H - 1; y > MT9V03X_H - hightest; y--)
     {
         //遍历过的必定为正确的边界
@@ -985,6 +983,9 @@ void center_repair(void){
         //右不丢，左丢
         else if (l_lost_flag[y + 1] == 1 && r_lost_flag[y + 1] == 0)
             l_border_repair[y - 1] = l_border_repair[y] - abs(r_border[y - 1] - r_border[y]);
+
+
+
     }
 
     //环岛中线修复
@@ -1060,7 +1061,7 @@ void center_repair(void){
 
 void straight_detect(void) 
 {
-    if (straight_flag == 0 && straight_dis > 200 && hightest<40)
+    if ( straight_dis > 160&& ramp_flag==0 && Island_State==0 &&zebra_line_flag==0&& abs(err)<45)
     {
         straight_flag = 1;
     }
@@ -1069,6 +1070,17 @@ void straight_detect(void)
 }
 
 
+void corn_detect(void)
+{
+
+    if(straight_flag==0 && ramp_flag==0 && Island_State==0 && cross_flag==0 && straight_dis<150 && abs(err)>45)
+    {
+
+        corn_flag=1;
+    }
+    else
+        corn_flag=0;
+}
 
 void Zebra_detect(void)
 {
@@ -1141,8 +1153,9 @@ void process(void)
     Image_Binarization(Threshold);//图像二值化
     Longest_White_Column();
     Cross_Detect();
-    //Island_Detect();
+    Island_Detect();
     straight_detect();
+    corn_detect();
 //显示用
     for(y=0;y<MT9V03X_H;y++){
         center_line[y]=(r_border_fill[y]+l_border_fill[y])/2;
