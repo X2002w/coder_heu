@@ -30,6 +30,12 @@ extern int right_white_num;
 extern int speed_map;//最终用于映射的白点
 extern float straight_dis;//现实实际距离映射
 
+//速度策略相关,差速，不降速
+extern int straight_jia;
+extern int island_jia;
+extern int ramp_jia;
+extern int corn_jia;
+
 
 
 //电机驱动相关信息

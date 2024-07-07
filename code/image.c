@@ -221,6 +221,7 @@ void Image_Binarization(int threshold)//Í¼Ïñ¶þÖµ»¯
                 bin_image[i][j]=IMG_WHITE;//°×
             else
                 bin_image[i][j]=IMG_BLACK;//ºÚ
+
         }
     }
 }

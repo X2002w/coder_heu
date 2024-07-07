@@ -25,6 +25,10 @@ float speed_ratio = 0.91;//差速系数
 0.91,390
 1.15,430//甩尾+侧翻，圆环路径差
 1.22,450//甩尾，圆环路径差
+1.3,490
+系数小，冲出赛道，跳轮，侧翻
+系数大，甩尾，电机发热
+
 
 
 
@@ -36,9 +40,10 @@ float duty;//电机差速增量
 
 
 //速度策略相关,差速，不降速
-int straight_jia = 450;
-int island_jia = 320;;
-int ramp_jia = 0;
+int straight_jia = 50;
+int island_jia = 60;
+int ramp_jia = 100;
+int corn_jia = 40;
 
 
 
@@ -61,7 +66,7 @@ void encoder_get(void){
 //速度决策
 void set_speed(void)
 {
-    int y, x;
+    int y=0;
   
     //设置弯道速度为基础速度
 
@@ -100,6 +105,7 @@ void set_speed(void)
         //printf("%d    %d\n",y,left_white_num);
     }
 
+ 
     for (y= MT9V03X_H-1;y>=0;y--)
     {
         if (bin_image[y][right_map[y]] == 0)
@@ -139,12 +145,12 @@ Coefficients (with 95% confidence bounds):
         //长直道速度
         if (straight_flag==1 && Island_State==0&&ramp_flag==0&& zebra_line_flag==0)
         {
-           // target_speed = straight_jia;
+            target_speed1 = target_speed+straight_jia;
         }
         //环岛速度
         else if (straight_flag==0&& Island_State&& ramp_flag == 0 && zebra_line_flag == 0)
         {
-           // target_speed = island_jia;
+            target_speed1 = target_speed-island_jia;
         }
         //坡道速度
         else if (straight_flag == 0 && Island_State==0 && ramp_flag && zebra_line_flag == 0)
@@ -171,7 +177,7 @@ Coefficients (with 95% confidence bounds):
         if(corn_flag)
         {
 
-            target_speed1=390;
+            target_speed1=target_speed- corn_jia;
 
         }
 

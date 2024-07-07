@@ -70,11 +70,11 @@ void dispage2(void) //第3面参数显示
 {
 
     //电机,差速调节
-        ips200_show_string(1,130, "hightest:");
-        ips200_show_string(1,150, "string:");
-        ips200_show_string(1,170, "string:");
+        ips200_show_string(1,130, "corn_jia:");
+        ips200_show_string(1,150, "straight_jia:");
+        ips200_show_string(1,170, "island_jia:");
 
-        ips200_show_string(1,190, "string:");//差速误差系数
+        ips200_show_string(1,190, "ramp_jia:");//差速误差系数
         ips200_show_string(1,210, "string:");//差速环岛阈值
 
         ips200_show_string(1,230, "string:");//差速弯道阈值
@@ -116,10 +116,10 @@ void number1(void)
 
 void number2(void)
 {
-    ips200_show_float(160, 130, 0, 3, 2);
-       ips200_show_float(160, 150, 0, 3, 2);
-       ips200_show_float(160, 170, 0, 3, 1);
-       ips200_show_float(160, 190, 0, 2, 3);
+    ips200_show_float(160, 130, corn_jia, 3, 2);
+       ips200_show_float(160, 150, straight_jia, 3, 2);
+       ips200_show_float(160, 170, island_jia, 3, 1);
+       ips200_show_float(160, 190, ramp_jia, 2, 3);
        ips200_show_float(160, 210, 0, 3, 1);
        ips200_show_float(160, 230, 0, 2, 3);
        ips200_show_float(160, 250, 0, 2, 3);
@@ -383,15 +383,17 @@ void  key1_function(void)
     }
     else  if(dispagenum==3){ //参数显示
        if(paraadjnum==0){
+           corn_jia += 10;
        }
        else  if(paraadjnum==1){
+           straight_jia += 10;
        }
        else if(paraadjnum==2) {
-
+           island_jia+=10;
        }
        else if(paraadjnum==3) {
 
-
+           ramp_jia += 10;
        }
        else if(paraadjnum==4) {
 
@@ -477,18 +479,18 @@ void  key1_function(void)
       else  if(dispagenum==3){ //参数显示
          if(paraadjnum==0){
 
-
+             corn_jia -= 10;
          }
          else  if(paraadjnum==1){
-
+             straight_jia -= 10;
          }
          else if(paraadjnum==2) {
 
-
+             island_jia -= 10;
          }
          else if(paraadjnum==3) {
 
-
+             ramp_jia -= 10;
          }
          else if(paraadjnum==4) {
 
