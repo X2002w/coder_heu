@@ -81,6 +81,7 @@ int r_lost_flag[MT9V03X_H]; //右丢线数组，丢线置1
 
 //十字
 int cross_flag=0;//十字标志位
+int cross_pre_flag=0;
 volatile int Left_Down_Find = 0; //十字使用，找到被置行数，没找到就是0
 volatile int Left_Up_Find = 0;   //四个拐点标志
 volatile int Right_Down_Find = 0;
@@ -285,6 +286,12 @@ void Longest_White_Column(void)//最长白列巡线
         }
     }
 
+    if(cross_pre_flag==1)
+    {
+        start_column=60;
+        end_column=MT9V03X_W-60;
+
+    }
     //从左到右，从下往上，遍历全图记录范围内的每一列白点数量
     for (j =start_column; j<=end_column; j++)
     {
@@ -433,19 +440,17 @@ float Err_Sum(void)
     {
         for (i = MT9V03X_H - 1; i >=13; i--)//常规误差计算
         {
-            err += (MT9V03X_W / 2 - ((l_border_repair[i] + r_border_repair[i]) >> 1)) * Weight[i];//右移1位，等效除2
+            err += (MT9V03X_W / 2 +1 - ((l_border_repair[i] + r_border_repair[i]) >> 1)) * Weight[i];//右移1位，等效除2
             weight_count += Weight[i];
         }
         err = err / weight_count;
     }
 
-
-
     else 
     {
             for (i = MT9V03X_H - 1; i >= MT9V03X_H - hightest - 1; i--)//常规误差计算
             {
-                err += (MT9V03X_W / 2 - ((l_border_repair[i] + r_border_repair[i]) >> 1)) * Weight[i];//右移1位，等效除2
+                err += (MT9V03X_W / 2 + 1 - ((l_border_repair[i] + r_border_repair[i]) >> 1)) * Weight[i];//右移1位，等效除2
                 weight_count += Weight[i];
             }
             err = err / weight_count;
@@ -892,6 +897,12 @@ void Find_Up_Point(int start, int end)
         Right_Up_Find = 0;
         Left_Up_Find = 0;
     }
+    //横向撕裂过大，视为误判
+    if(r_border[Right_Up_Find]>160 || l_border[Left_Up_Find]<20)
+    {
+        Right_Up_Find = 0;
+        Left_Up_Find = 0;
+    }
 }
 
 
@@ -906,19 +917,29 @@ void Find_Up_Point(int start, int end)
 void Cross_Detect()
 {
     int down_search_start = 0;//下点搜索开始行
-    cross_flag = 0;
+    //cross_flag = 0;
+    //cross_pre_flag=0;
     if (Island_State == 0 && ramp_flag == 0)//与环岛互斥开
     {
         Left_Up_Find = 0;
         Right_Up_Find = 0;
         if (l_r_lostnum >= 10)//十字必定有双边丢线，在有双边丢线的情况下再开始找角点
         {
+            cross_pre_flag=1;
+        }
+        else
+            cross_pre_flag=0;
+
+        if(cross_pre_flag==1)
+        {
+            Longest_White_Column();
             Find_Up_Point(MT9V03X_H - 1, 0);
             if (Left_Up_Find == 0 && Right_Up_Find == 0)//只要没有同时找到两个上点，直接结束
             {
                 return;
             }
         }
+
         if (Left_Up_Find != 0 && Right_Up_Find != 0)//找到两个上点，就找到十字了
         {
             cross_flag = 1;//对应标志位，便于各元素互斥掉
@@ -956,7 +977,9 @@ void Cross_Detect()
         else
         {
             cross_flag = 0;
+            cross_pre_flag=0;
         }
+
     }
     //角点相关变量，debug使用
 
@@ -973,7 +996,8 @@ void center_repair(void){
 //对于丢线，查找未丢线边界的变化趋势，映射到丢线区域,
 //直接检查双边丢线情况
 
-if(cross_flag==0&& ramp_flag==0&& (Island_State==0||Island_State==4||Island_State==3))
+if(cross_flag==0&& ramp_flag==0&& (Island_State==0||Island_State==4))
+{
     for (y = MT9V03X_H - 1; y > MT9V03X_H - hightest; y--)
     {
         //遍历过的必定为正确的边界
@@ -984,15 +1008,12 @@ if(cross_flag==0&& ramp_flag==0&& (Island_State==0||Island_State==4||Island_Stat
         //右不丢，左丢
         else if (l_lost_flag[y + 1] == 1 && r_lost_flag[y + 1] == 0)
             l_border_repair[y - 1] = l_border_repair[y] - abs(r_border[y - 1] - r_border[y]);
-
-
-
     }
-
+}
     //环岛中线修复
     if(Island_State&&cross_flag==0 && ramp_flag==0)
     {
-      /*  if(Island_State==1||Island_State==2 || Island_State==8)
+        if(Island_State==1||Island_State==2 )
         {
             if(Left_Island_Flag)
             {
@@ -1008,15 +1029,15 @@ if(cross_flag==0&& ramp_flag==0&& (Island_State==0||Island_State==4||Island_Stat
                     r_border_repair[y]= l_border_repair[y]+standard_road_wide[y];
                 }
             }
-        }*/
+        }/*
         if (Island_State == 4) 
         {
             //环岛误差补偿
-            /*
+            
              * f(x) = p1*x + p2
             Coefficients:
            p1 =      0.3333
-           p2 =      -3.333*/
+           p2 =      -3.333
             if(l_lost_num>10 &&  r_lost_num<5)
                    {
                        err_add = l_lost_num * 0.3333 + -3.333;
@@ -1027,7 +1048,7 @@ if(cross_flag==0&& ramp_flag==0&& (Island_State==0||Island_State==4||Island_Stat
 
                        err_add = -(r_lost_num * 0.3333 + -3.333);
                    }
-        }
+        }*/
     }
 
     //再次修补普通弯道的中线，使用丢线数来给予误差补偿
@@ -1062,7 +1083,7 @@ if(cross_flag==0&& ramp_flag==0&& (Island_State==0||Island_State==4||Island_Stat
 
 void straight_detect(void) 
 {
-    if ( straight_dis > 160&& ramp_flag==0 && Island_State==0 &&zebra_line_flag==0&& abs(err)<45)
+    if ( straight_dis > 160&& ramp_flag==0 && Island_State==0 &&zebra_line_flag==0)
     {
         straight_flag = 1;
     }
@@ -1071,10 +1092,48 @@ void straight_detect(void)
 }
 
 
+
+
+void Ramp_Detect(void)
+{
+    int i=0;
+    int count=0;
+
+    if(hightest>=60&&Island_State==0&&cross_flag==0&&zebra_line_flag==0)
+    {
+
+        for(i=MT9V03X_H-1;i>MT9V03X_H-hightest;i--)
+        {
+            if(abs(road_wide[i]-standard_road_wide[i])>10)
+            {
+                count++;
+            }
+        }
+    }
+    if(count>=10)
+    {
+        if(dl1a_distance_mm<400&&FJ_Pitch<=-5)
+        {
+            if(ramp_flag==0)
+            {
+                ramp_flag=1;
+            }
+        }
+        else if((dl1a_distance_mm>400&&dl1a_distance_mm<450)&& FJ_Pitch<=5)
+        {
+            if(ramp_flag==1)
+            {
+                ramp_flag=0;
+            }
+        }
+    }
+
+}
+
 void corn_detect(void)
 {
 
-    if(straight_flag==0 && ramp_flag==0 && Island_State==0 && cross_flag==0 && straight_dis<150 && abs(err)>45)
+    if(straight_flag==0 && ramp_flag==0 && Island_State==0 && cross_flag==0 && straight_dis<150)
     {
 
         corn_flag=1;
@@ -1097,16 +1156,21 @@ void Zebra_detect(void)
             {
                 count++;
             }
+
         }
 
     }
     if(count>=8)
    {
+       /*zebra_line_flag=1;*/
+
+       /**/
        zebra_line_flag+=1;
        if(zebra_line_flag>30)
        {
        //zebra_line_flag=0;
        }
+
    }
 
 
@@ -1169,6 +1233,7 @@ void process(void)
         center_line_repair[y] = (r_border_repair[y] + l_border_repair[y]) / 2;
     }
 
+  //  Ramp_Detect();
     Zebra_detect();
     set_speed();
    // err=Err_Sum()+err_add;

@@ -38,8 +38,18 @@ extern int corn_jia;
 
 
 
+//刹车标志位
+extern int jisha_flag;
+//堵转标志位
+extern int duzhuan_flag;
+
+
+
 //电机驱动相关信息
 void l_motor_driver(int speed_l);//电机驱动函数
 void r_motor_driver(int speed_r);//电机驱动函数
 
+
+void encoder_get(void);
+void speed_contral(void);
 #endif /* CODE_CONTROL_H_ */

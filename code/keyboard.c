@@ -59,11 +59,11 @@ void dispage1(void) //第2面参数显示
     ips200_show_string(1,150, "l_ki:");
     ips200_show_string(1,170, "r_kp:");
     //舵机参数调节
-    ips200_show_string(1,190, "r_ki:");//基础kp
-    ips200_show_string(1,210, "speed_ratio:");//二次项参数
-    ips200_show_string(1,230, "set_mode:");//指数项参数
-    ips200_show_string(1,250, "string:");//动态kd参数
-    ips200_show_string(1,270, "string:");//陀螺仪加速度参数
+    ips200_show_string(1,190, "r_ki:");//
+    ips200_show_string(1,210, "speed_ratio:");//
+    ips200_show_string(1,230, "set_mode:");//
+    ips200_show_string(1,250, "kd_ratio:");//动态kd参数
+    ips200_show_string(1,270, "servo_kp:");//
 
 }
 void dispage2(void) //第3面参数显示
@@ -75,9 +75,9 @@ void dispage2(void) //第3面参数显示
         ips200_show_string(1,170, "island_jia:");
 
         ips200_show_string(1,190, "ramp_jia:");//差速误差系数
-        ips200_show_string(1,210, "string:");//差速环岛阈值
+        ips200_show_string(1,210, "Ok:");//差速环岛阈值
 
-        ips200_show_string(1,230, "string:");//差速弯道阈值
+        ips200_show_string(1,230, "target_speed:");//差速弯道阈值
         ips200_show_string(1,250, "string:");//差速环岛阈值
         ips200_show_string(1,270, "string:");//差速直道系数
 }
@@ -104,9 +104,8 @@ void number1(void)
     ips200_show_float(160, 190, r_motor_ki, 3, 2);
     ips200_show_float(160, 210, speed_ratio, 3, 2);
     ips200_show_float(160, 230, set_mode, 3, 2);
-    ips200_show_float(160, 250, 0, 3, 2);
-    ips200_show_float(160, 270, 0, 3, 2);
-
+    ips200_show_float(160, 250, kd_ratio, 3, 1);
+    ips200_show_float(160, 270, servo_kp, 3, 2);
 
 
 
@@ -119,9 +118,9 @@ void number2(void)
     ips200_show_float(160, 130, corn_jia, 3, 2);
        ips200_show_float(160, 150, straight_jia, 3, 2);
        ips200_show_float(160, 170, island_jia, 3, 1);
-       ips200_show_float(160, 190, ramp_jia, 2, 3);
-       ips200_show_float(160, 210, 0, 3, 1);
-       ips200_show_float(160, 230, 0, 2, 3);
+       ips200_show_float(160, 190, ramp_jia, 3, 1);
+       ips200_show_float(160, 210, Ok, 3, 1);
+       ips200_show_float(160, 230, target_speed, 3, 1);
        ips200_show_float(160, 250, 0, 2, 3);
        ips200_show_float(160, 270, 0, 2, 3);
 }
@@ -291,18 +290,24 @@ void interface_display(void)
                        ips200_show_string(1,210, "straight_flag:");
                        ips200_show_float(160, 210, straight_flag, 3, 1);
 
-                       ips200_show_string(1,230, "string:");
-                       ips200_show_float(50, 230, 0, 3, 1);
-                       ips200_show_string(110,230, "string:");
-                       ips200_show_float(170, 230, 0, 3, 1);
+                       ips200_show_string(1,230, "ramp_flag:");
+                       ips200_show_float(160, 230, ramp_flag, 3, 1);
 
-                       ips200_show_string(1,250, "string:");
-                       ips200_show_float(160, 250, 0, 3, 2);
+                       /*
+                       ips200_show_string(1,230, "jisha_flag:");
+                       ips200_show_float(50, 230, jisha_flag, 3, 1);
+                       ips200_show_string(110,230, "duzhuan_flag:");
+                       ips200_show_float(170, 230, duzhuan_flag, 3, 1);
+                       */
+                       ips200_show_string(1,250, "cross_pre_flag:");
+                       ips200_show_float(160, 250, cross_pre_flag, 3, 2);
 
-                       ips200_show_string(1,270, "string:");
-                       ips200_show_float(50, 270, 0, 3, 1);
-                       ips200_show_string(110,270, "string:");
-                       ips200_show_float(170, 270, 0, 3, 1);
+                       /*ips200_show_string(1,270, "ramp_flag:");
+                       ips200_show_float(50, 270, ramp_flag, 3, 1);
+                       */
+                       ips200_show_string(1,270, "Pitch:");
+                       ips200_show_float(160, 270, FJ_Pitch, 3, 1);
+
 
         }
         else if(dispagenum==2) //显示小车控制参数及调节
@@ -368,16 +373,18 @@ void  key1_function(void)
             r_motor_ki+=0.2;
         }
         else if(paraadjnum==4) {
-            speed_ratio+=0.01;
+            speed_ratio+=0.11;
         }
         else if(paraadjnum==5) {
 
             set_mode+=1;
         }
         else if(paraadjnum==6) {
-
+            kd_ratio+=0.1;
         }
         else if(paraadjnum==7) {
+
+            servo_kp+=0.1;
         }
 
     }
@@ -394,12 +401,16 @@ void  key1_function(void)
        else if(paraadjnum==3) {
 
            ramp_jia += 10;
+
        }
        else if(paraadjnum==4) {
 
+           Ok +=1;
+           if(Ok>=1)
+               Ok =1;
        }
        else if(paraadjnum==5) {
-
+           target_speed+=20;
        }
        else if(paraadjnum==6) {
 
@@ -461,7 +472,7 @@ void  key1_function(void)
               r_motor_ki-=0.2;
           }
           else if(paraadjnum==4) {//环岛道速度-
-              speed_ratio-=0.01;
+              speed_ratio-=0.1;
           }
           else if(paraadjnum==5) {//连续S弯道速度-
 
@@ -469,10 +480,10 @@ void  key1_function(void)
           }
           else if(paraadjnum==6) {
 
-
+              kd_ratio-=0.1;
           }
           else if(paraadjnum==7) {
-
+              servo_kp-=0.1;
           }
 
       }
@@ -494,9 +505,13 @@ void  key1_function(void)
          }
          else if(paraadjnum==4) {
 
+
+             Ok -=1;
+             if(Ok <=0)
+                 Ok=0;
          }
          else if(paraadjnum==5) {
-
+             target_speed-=20;
          }
          else if(paraadjnum==6) {
 
@@ -660,9 +675,16 @@ void sending(void)
     tempFloat[0]=err;
     tempFloat[1]=left_encoder;
     tempFloat[2]=right_encoder;
-    tempFloat[3]=corn_flag;
-    tempFloat[4]=straight_flag;
-
+    tempFloat[3]=Target_Speed_l;
+    tempFloat[4]=Target_Speed_r;
+    tempFloat[5]=corn_flag;
+    tempFloat[6]=straight_flag;
+    tempFloat[7]=jisha_flag;
+    tempFloat[8]=duzhuan_flag;
+    tempFloat[9]=left_speed;
+    tempFloat[10]=right_speed;
+    tempFloat[11]=(angle-4710);
+    //tempFloat[12]=(angle-4710)*speed_ratio;
   memcpy(tempData, (uint8 *)tempFloat, sizeof(tempFloat));
 
     tempData[48] = 0x00;

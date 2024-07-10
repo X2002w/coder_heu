@@ -52,17 +52,29 @@ void core1_main(void)
 {
     disable_Watchdog();                     // 关闭看门狗
     interrupt_global_enable(0);             // 打开全局中断.
-  ///  wifi_spi();
+
     wireless_uart_init();
     mt9v03x_init();
+   // dl1a_init();
     imu660ra_init();
     Zero_Point_Detect();
+    //   wifi_spi();
   //  while (dl1a_init());//测距
 
     ips200_init(IPS200_TYPE_PARALLEL8);
-    pwm_init(ATOM0_CH1_P33_9,300,4700 );
-    pwm_init(ATOM0_CH5_P02_5, 17000, 2500);//you
-    pwm_init(ATOM0_CH7_P02_7, 17000, 2500);//zuo
+    pwm_init(ATOM0_CH1_P33_9,300,4710 );
+    pwm_init(ATOM0_CH5_P02_5, 17000, 0);//you
+
+
+
+/*
+    pwm_init(ATOM3_CH2_P33_6,50,300);//左无刷电机初始化
+    pwm_init(ATOM3_CH3_P33_7,50,300);//右无刷电机初始化
+
+*/
+
+
+    pwm_init(ATOM0_CH7_P02_7, 17000, 0);//zuo
 
     gpio_init(P02_4, GPO, 0, GPO_PUSH_PULL);//you
     gpio_init(P02_6, GPO, 0, GPO_PUSH_PULL);//zuo
@@ -83,9 +95,9 @@ void core1_main(void)
         buzzer();
         //fenglingqi_use();
         sending();
-       //  memcpy(image_copy[0], bin_image[0], MT9V03X_IMAGE_SIZE);
+         //memcpy(image_copy[0], bin_image[0], MT9V03X_IMAGE_SIZE);
              // 发送图像
-       //  seekfree_assistant_camera_send();
+        // seekfree_assistant_camera_send();
 
 
 

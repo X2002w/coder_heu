@@ -54,6 +54,7 @@ extern int ramp_flag;//坡道标志位
 
 //十字
 extern int cross_flag;//十字标志位
+extern int cross_pre_flag;//十字预处理标志位
 
 //直道
 extern int straight_flag;//直道标志位

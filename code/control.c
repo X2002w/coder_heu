@@ -10,14 +10,15 @@
 
 
 //小车速度相关信息
-int set_mode=1; //小车模式设置，给予不同速度
+int set_mode=0; //小车模式设置，给予不同速度
 int target_speed=340;//小车车身目标速度
 int target_speed1=0;
 int center_speed;//小车车身左右编码加权实际速度
 int left_encoder,right_encoder;//左右编码器读数
 int left_speed,right_speed;//左右轮差速目标速度
 int Target_Speed_l,Target_Speed_r;//左右轮实际速度
-float speed_ratio = 0.91;//差速系数
+float speed_ratio = 0.80;//差速系数
+int Ok=0;//确定发车
 
 
 
@@ -28,6 +29,11 @@ float speed_ratio = 0.91;//差速系数
 1.3,490
 系数小，冲出赛道，跳轮，侧翻
 系数大，甩尾，电机发热
+
+1.32 490 环-80，，环410
+1.02,430
+
+
 
 
 
@@ -40,11 +46,16 @@ float duty;//电机差速增量
 
 
 //速度策略相关,差速，不降速
-int straight_jia = 50;
-int island_jia = 60;
-int ramp_jia = 100;
-int corn_jia = 40;
+int straight_jia = 0;
+int island_jia = 0;
+int ramp_jia = 0;
+int corn_jia = 0;
 
+
+//刹车标志位
+int jisha_flag;
+//堵转标志位
+int duzhuan_flag;
 
 
 int left_white_num=0;
@@ -53,12 +64,15 @@ int speed_map;//最终用于映射的白点
 float straight_dis;//现实实际距离映射
 
 
+//编码器积分
+int encoder_count;
+
 void encoder_get(void){
     left_encoder=encoder_get_count(TIM6_ENCODER)*-1;
     right_encoder=encoder_get_count(TIM2_ENCODER);
     center_speed = (left_encoder + right_encoder) / 2;
   //  printf("%d,%d\n\r",left_encoder,right_encoder);
-
+    //encoder_count+=(left_encoder + right_encoder) / 2;
     encoder_clear_count(TIM6_ENCODER);
     encoder_clear_count(TIM2_ENCODER);
 }
@@ -71,7 +85,7 @@ void set_speed(void)
     //设置弯道速度为基础速度
 
     if (set_mode == 0)
-        target_speed = 320;
+        target_speed = target_speed+0;
     else if (set_mode == 1)
         target_speed = 390;
     else if (set_mode == 2)
@@ -117,6 +131,7 @@ void set_speed(void)
             right_white_num++;
         }
     }
+
     if (left_white_num > right_white_num)
         speed_map = left_white_num;
     else 
@@ -158,9 +173,16 @@ Coefficients (with 95% confidence bounds):
             target_speed1 =target_speed-ramp_jia;
         }
         //出界，斑马线速度
-        else if ((straight_flag == 0 && Island_State == 0 && ramp_flag==0 && zebra_line_flag)|| chujie_flag == 1)
+        else if ((straight_flag == 0 && Island_State == 0 && ramp_flag==0 && zebra_line_flag)|| chujie_flag == 1 || duzhuan_flag==1)
         {
             target_speed1 = 0;
+        }
+        //检测弯道刹车
+        else if (corn_flag)
+        {
+
+            target_speed1 = target_speed - corn_jia;
+
         }
         //其他情况，速度映射
         else
@@ -173,13 +195,15 @@ Coefficients (with 95% confidence bounds):
           //target_speed1= target_speed-(0.002017 *straight_dis*straight_dis+ 23.5);
         }
 
-        //检测弯道刹车
-        if(corn_flag)
+        //判定刹车
+        if ((corn_flag || Island_State || ramp_flag || zebra_line_flag) && center_speed > target_speed1)
         {
-
-            target_speed1=target_speed- corn_jia;
-
+            jisha_flag = 1;
         }
+        else
+            jisha_flag = 0;
+
+
 
 
 
@@ -193,11 +217,11 @@ void speed_contral(void)
 
 
    //舵机误差范围，正负430
-    if (straight_dis<100)//不是长直道
+    if (straight_dis<150)//不是长直道
         duty = (angle - servos_center)*speed_ratio;
     else
        // duty = (angle - servos_center) * (speed_ratio - 105)/100;
-        duty=(angle - servos_center)*speed_ratio-0.75;
+        duty=(angle - servos_center)*0;
     //SU400——duty分两种情况，即两种左转右转
     //计算车身实际速度
    // center_speed = (left_encoder + right_encoder) / 2;
@@ -304,14 +328,14 @@ void speed_contral(void)
         }
 
     }
-
-    if ((straight_flag == 0 && Island_State == 0 && ramp_flag==0 && zebra_line_flag)|| chujie_flag == 1)
+    //left_speed=target_speed;
+    //right_speed=target_speed;
+    if ((straight_flag == 0 && Island_State == 0 && ramp_flag==0 && zebra_line_flag)|| chujie_flag == 1 || duzhuan_flag==1)
             {
                 left_speed = 0;
                 right_speed = 0;
             }
-   // left_speed=target_speed;
-    //right_speed=target_speed;
+
 
 //printf("%d,%d,%d,%d,%d,%d\n",left_encoder,left_speed,Target_Speed_l,right_encoder,right_speed,Target_Speed_r);
 //printf("%d,%d,%d\n\r",right_encoder,right_speed,Target_Speed_r);
@@ -338,8 +362,15 @@ void speed_contral(void)
     Target_Speed_l=pid_l_motor(left_encoder,left_speed);
     Target_Speed_r=pid_r_motor(right_encoder,right_speed);
    // Target_Speed_r=0;
+    if(Ok){
     l_motor_driver(Target_Speed_l);
     r_motor_driver(Target_Speed_r);
+    }
+    else
+    {
+        pwm_set_duty(ATOM0_CH7_P02_7,0);
+        pwm_set_duty(ATOM0_CH5_P02_5,0);
+    }
 
 }
 

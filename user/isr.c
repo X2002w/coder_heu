@@ -40,13 +40,26 @@
 // 简单点说实际上进入中断后TC系列的硬件自动调用了 interrupt_global_disable(); 来拒绝响应任何的中断，因此需要我们自己手动调用 interrupt_global_enable(0); 来开启中断的响应。
 
 // **************************** PIT中断函数 ****************************
+
+int time1=0;
+
 IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 {
     interrupt_global_enable(0);                     // 开启中断嵌套
     pit_clear_flag(CCU60_CH0);
     //获取编码器数据
+
      encoder_get();
      speed_contral();
+     if((left_encoder!=0 || right_encoder!=0)&&(Target_Speed_l>=7500|| Target_Speed_r>=7500))
+     {
+         time1++;
+     }
+     if(time1>=40)
+         duzhuan_flag=0;
+     else
+         duzhuan_flag=0;
+
 
 }
 
@@ -57,6 +70,7 @@ IFX_INTERRUPT(cc60_pit_ch1_isr, 0, CCU6_0_CH1_ISR_PRIORITY)
     pit_clear_flag(CCU60_CH1);
     imu660ra_get_acc();
     Gyroscope_GetData();
+  //  dl1a_get_distance();
     Get_Gyroscope_Pitch(); //俯仰角实时判断
   //  printf("%f\n\r",FJ_Pitch);
     if (Island_State != 0)//进环岛就积分

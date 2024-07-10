@@ -144,7 +144,7 @@ void Island_Detect()
                     Left_Island_Flag = 0;
                 }*/
 
-                if (k == 0 && (15 <= left_up_point[0] && left_up_point[0] < 50) && (50 < left_up_point[1] && left_up_point[1] < 110))//拐点出现在一定范围内，认为是拐点出现
+                if (k == 0 && (10 <= left_up_point[0] && left_up_point[0] < 55) && (40 < left_up_point[1] && left_up_point[1] < 120))//拐点出现在一定范围内，认为是拐点出现
                 {
                     island_state_3_up[0] = left_up_point[0];
                     island_state_3_up[1] = left_up_point[1];
