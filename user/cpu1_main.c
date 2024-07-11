@@ -53,7 +53,7 @@ void core1_main(void)
     disable_Watchdog();                     // 关闭看门狗
     interrupt_global_enable(0);             // 打开全局中断.
 
-    wireless_uart_init();
+  //  wireless_uart_init();
     mt9v03x_init();
    // dl1a_init();
     imu660ra_init();
@@ -94,7 +94,7 @@ void core1_main(void)
         interface_display();
         buzzer();
         //fenglingqi_use();
-        sending();
+       // sending();
          //memcpy(image_copy[0], bin_image[0], MT9V03X_IMAGE_SIZE);
              // 发送图像
         // seekfree_assistant_camera_send();

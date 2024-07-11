@@ -680,7 +680,7 @@ void sending(void)
     tempFloat[5]=corn_flag;
     tempFloat[6]=straight_flag;
     tempFloat[7]=jisha_flag;
-    tempFloat[8]=duzhuan_flag;
+    tempFloat[8]=FJ_Angle;
     tempFloat[9]=left_speed;
     tempFloat[10]=right_speed;
     tempFloat[11]=(angle-4710);

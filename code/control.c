@@ -328,8 +328,8 @@ void speed_contral(void)
         }
 
     }
-    //left_speed=target_speed;
-    //right_speed=target_speed;
+    left_speed=target_speed;
+    right_speed=target_speed;
     if ((straight_flag == 0 && Island_State == 0 && ramp_flag==0 && zebra_line_flag)|| chujie_flag == 1 || duzhuan_flag==1)
             {
                 left_speed = 0;
@@ -362,7 +362,7 @@ void speed_contral(void)
     Target_Speed_l=pid_l_motor(left_encoder,left_speed);
     Target_Speed_r=pid_r_motor(right_encoder,right_speed);
    // Target_Speed_r=0;
-    if(Ok){
+  /*  if(Ok){
     l_motor_driver(Target_Speed_l);
     r_motor_driver(Target_Speed_r);
     }
@@ -371,7 +371,9 @@ void speed_contral(void)
         pwm_set_duty(ATOM0_CH7_P02_7,0);
         pwm_set_duty(ATOM0_CH5_P02_5,0);
     }
-
+*/
+    l_motor_driver(Target_Speed_l);
+       r_motor_driver(Target_Speed_r);
 }
 
 
@@ -381,7 +383,7 @@ void l_motor_driver(int speed_l)//电机驱动函数
 {
       if(speed_l>=0)//左
       {
-          gpio_set_level(P02_6, 1);
+          gpio_set_level(P02_6,1 );
           pwm_set_duty(ATOM0_CH7_P02_7,speed_l);
 
 

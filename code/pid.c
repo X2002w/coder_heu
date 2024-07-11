@@ -19,13 +19,16 @@ int r_motor_l_err=0;
 int r_motor_duty=0;
 
 //¶æ»úpid²ÎÊý
-float servo_kp=7.5;
+float servo_kp=8.2;
+//float servo_kp=1.9;
 float servo_ki=0;
 float servo_kd=0;
 float servo_kp1=0;
-float servo_l_err=0;
+float servo_l_err=1.3;
 
-float kd_ratio=1.9;
+float kd_ratio=0;//1.9;
+
+//float kd_ratio=1.6;
 
 int pid_servo(float Err)
 {
@@ -44,7 +47,7 @@ int pid_servo(float Err)
         servo_kp1=10.3;*/
     servo_kd=servo_kp*kd_ratio;
 
-    duty=servo_kp*err+0.0015*err*abs(err)+servo_kd*(err-servo_l_err)-imu660ra_gyro_z*0.03;
+    duty=servo_kp*err+/*0.0015*err*abs(err)*/+servo_kd*(err-servo_l_err)/*-imu660ra_gyro_z*0.03*/;
    // printf("%d,%d,%d\n",imu660ra_gyro_x,imu660ra_gyro_y,imu660ra_gyro_z);
     // duty=-im u660ra_gyro_z*0.12;
     servo_l_err=err;

@@ -486,9 +486,9 @@ int Find_Left_Up_Point(int start, int end)//找四个角点，返回值是角点所在的行数
             abs(l_border[i] - l_border[i - 1]) <= 5 &&
             abs(l_border[i - 1] - l_border[i - 2]) <= 5 &&
             abs(l_border[i - 2] - l_border[i - 3]) <= 5 &&
-            (l_border[i] - l_border[i + 2]) >= 8 &&
-            (l_border[i] - l_border[i + 3]) >= 15 &&
-            (l_border[i] - l_border[i + 4]) >= 15)
+            (l_border[i] - l_border[i + 2]) >= 5 &&
+            (l_border[i] - l_border[i + 3]) >= 7 &&
+            (l_border[i] - l_border[i + 4]) >= 8)
         {
             left_up_line = i;//获取行数即可
             break;
@@ -570,9 +570,9 @@ int Find_Right_Up_Point(int start, int end)//找四个角点，返回值是角点所在的行数
             abs(r_border[i] - r_border[i - 1]) <= 5 &&//下面两行位置差不多
             abs(r_border[i - 1] - r_border[i - 2]) <= 5 &&
             abs(r_border[i - 2] - r_border[i - 3]) <= 5 &&
-            (r_border[i] - r_border[i + 2]) <= -8 &&
-            (r_border[i] - r_border[i + 3]) <= -15 &&
-            (r_border[i] - r_border[i + 4]) <= -15)
+            (r_border[i] - r_border[i + 2]) <= -5 &&
+            (r_border[i] - r_border[i + 3]) <= -7 &&
+            (r_border[i] - r_border[i + 4]) <= -8)
         {
             right_up_line = i;//获取行数即可
             break;

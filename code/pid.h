@@ -12,6 +12,10 @@
 #define servos_max 5120
 #define servos_min 4280
 
+/*
+#define servos_center 580//440,4545理论中值
+#define servos_max 650
+#define servos_min 510*/
 //电机pid参数
 extern float l_motor_kp;
 extern float l_motor_ki;

@@ -995,7 +995,7 @@ void center_repair(void){
 
 //对于丢线，查找未丢线边界的变化趋势，映射到丢线区域,
 //直接检查双边丢线情况
-
+/*
 if(cross_flag==0&& ramp_flag==0&& (Island_State==0||Island_State==4))
 {
     for (y = MT9V03X_H - 1; y > MT9V03X_H - hightest; y--)
@@ -1009,7 +1009,7 @@ if(cross_flag==0&& ramp_flag==0&& (Island_State==0||Island_State==4))
         else if (l_lost_flag[y + 1] == 1 && r_lost_flag[y + 1] == 0)
             l_border_repair[y - 1] = l_border_repair[y] - abs(r_border[y - 1] - r_border[y]);
     }
-}
+}*/
     //环岛中线修复
     if(Island_State&&cross_flag==0 && ramp_flag==0)
     {
